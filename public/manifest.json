@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Extension Starter Template",
+  "short_name": "Extension Starter",
+  "version": "1.0.0",
+  "description": " A Chrome Extension Starter Template",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_title": "Chrome Extension Starter"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
