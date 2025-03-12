@@ -11,7 +11,16 @@
     "storage"
   ],
   "action": {
-    "default_title": "Chrome Extension Starter"
+    "default_title": "Chrome Extension Starter",
+    "default_icon": {
+      "16": "icons/web/favicon.ico",
+      "192": "icons/web/icon-192.png",
+      "512": "icons/web/icon-512.png"
+    }
+  },
+  "icons": {
+    "192": "icons/web/icon-192.png",
+    "512": "icons/web/icon-512.png"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
