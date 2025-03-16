@@ -18,7 +18,7 @@ export default function SettingsPanel({
   setQuotesVisible 
 }: SettingsPanelProps) {
   return (
-    <div className="w-64 bg-white p-6 overflow-y-auto h-full shadow-lg border-r border-gray-200">
+    <div className="w-120 bg-white p-6 overflow-y-auto h-full shadow-lg border-r border-gray-200">
       <h2 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Settings</h2>
       <div className="border-b border-[#d9d9d9] mb-4"></div>
       <div className="space-y-6">

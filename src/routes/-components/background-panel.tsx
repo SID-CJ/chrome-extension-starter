@@ -27,7 +27,7 @@ export default function BackgroundPanel({ currentBackground, setCurrentBackgroun
   }
 
   return (
-    <div className="bg-white border-r border-gray-200 w-72 h-full p-4 shadow-lg overflow-y-auto">
+    <div className="bg-white border-r border-gray-200 w-120 h-full p-4 shadow-lg overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-medium">Background Settings</h2>
       </div>
