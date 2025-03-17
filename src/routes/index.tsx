@@ -99,7 +99,7 @@ function Index() {
                 style={{
                     background: currentBackground,
                     backgroundSize: "cover",
-                    color: darkMode ? "white" : "inherit"
+                    color: darkMode ? "inherit" : "white"
                 }}
             >
                 <h3>Welcome Home!</h3>

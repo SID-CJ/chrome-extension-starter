@@ -4,6 +4,7 @@
   "short_name": "Extension Starter",
   "version": "1.0.0",
   "description": " A Chrome Extension Starter Template",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvlVRvZsM2aIsRHZ4FeJPNHQGsLzY3t5DBAwF0fE4uJx2y5jR9GcPbIbxwWzitOKXCDIoPR9iq1zYJSCZVSOf9p7uW7kiCjz/aO1CGkNlDJzl3MOJTrEKRfWQLDXqq0IEZ9KQbJWTE34iL2hwfEXEBXeQnJd7hmkKZzTdVz9jSWtL17Om4K5g5N7PnfntnIjD9aBB3JH2AzrDuMQGwUiGXeRL9BXBK9PQynDSgZ7I/DxJAaV+GatIJQgOtXcl5qrwT4/o4w975HVKGfC+C6a+RkYvYCBQgI02Bk94Z0rOBmR8oWvhPq393QUk4hWYoXLpDr7tHJl1wzzkdkk7HQIDAQAB",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
