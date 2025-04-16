@@ -15,9 +15,9 @@
   "action": {
     "default_title": "Chrome Extension Starter",
     "default_icon": {
-      "16": "icons/web/favicon.ico",
-      "192": "icons/web/icon-192.png",
-      "512": "icons/web/icon-512.png"
+      "16": "/icons/web/Icon_16.png",
+      "48": "/icons/web/Icon_48.png",
+      "128": "/icons/web/Icon_128.png"
     }
   },
   "background": {
@@ -25,8 +25,8 @@
     "type": "module"
   },
   "icons": {
-    "192": "icons/web/icon-192.png",
-    "512": "icons/web/icon-512.png"
+    "48": "/icons/web/Icon_48.png",
+    "128": "/icons/web/Icon_128.png"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

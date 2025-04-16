@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Settings, Repeat, Clock } from "lucide-react";
+import { Play, Pause, Repeat, Clock } from "lucide-react";
 import { useTracksFetch } from "@/api/tracks/useTracksFetch";
 import PlayerService from "@/services/PlayerService";
 import { Track } from "@/api/tracks/useTracksFetch";
@@ -96,7 +96,7 @@ export default function AmbientSoundPlayer() {
   };
 
   return (
-    <div className="w-120 flex flex-col min-h-screen bg-white">
+    <div className="w-150 flex flex-col min-h-screen bg-white">
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 max-w-3xl mx-auto w-full p-4 overflow-y-auto">
         <div className="space-y-1 mb-4">
@@ -256,21 +256,12 @@ export default function AmbientSoundPlayer() {
                   <span className="text-xs text-[#858585]">{formatTime(remainingTime)}</span>
                 )}
               </div>
-              <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-                <Settings className="h-4 w-4" />
-              </Button>
+              
             </div>
           </div>
         </div>
       )}
 
-      {/* Floating Buttons */}
-      <div className="fixed right-4 top-1/2 -translate-y-1/2 flex flex-col gap-4">
-        <Button variant="outline" size="icon" className="rounded-full h-8 w-8 border-[#d9d9d9]">
-          <Play className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="icon" className="rounded-full h-8 w-8 border-[#d9d9d9]"></Button>
-      </div>
     </div>
   );
 }

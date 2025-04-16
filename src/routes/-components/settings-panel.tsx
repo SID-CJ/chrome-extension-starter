@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Settings, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTheme } from "../-components/theme-provider"; // Import the useTheme hook
 
 interface SettingsPanelProps {
   darkMode: boolean;
@@ -15,33 +15,44 @@ interface SettingsPanelProps {
   setTimeAndDateVisible: (value: boolean) => void;
   quotesVisible: boolean;
   setQuotesVisible: (value: boolean) => void;
+  timeFormat: string;
+  setTimeFormat: (value: string) => void;
+  dateFormat: string;
+  setDateFormat: (value: string) => void;
 }
 
 export default function SettingsPanel({
-  darkMode,
   setDarkMode,
   timeAndDateVisible,
   setTimeAndDateVisible,
   quotesVisible,
   setQuotesVisible,
+  timeFormat,
+  setTimeFormat,
+  dateFormat,
+  setDateFormat,
 }: SettingsPanelProps) {
-  const [timeFormat, setTimeFormat] = useState("12h");
-  const [dateFormat, setDateFormat] = useState("mdy");
+  const { theme, setTheme } = useTheme(); // Use theme and setTheme from ThemeProvider
   const [quoteFrequency, setQuoteFrequency] = useState("daily");
   const [language, setLanguage] = useState("en");
-  const [darkModeOption, setDarkModeOption] = useState(darkMode ? "dark" : "light"); // Sync with prop
+  const [darkModeOption, setDarkModeOption] = useState<'dark' | 'light' | 'system'>(theme as 'dark' | 'light' | 'system'); // Sync with theme provider
 
-  // Sync darkModeOption with darkMode prop changes
-  const handleDarkModeChange = (value: string) => {
+  const handleDarkModeChange = (value: 'dark' | 'light' | 'system') => {
     setDarkModeOption(value);
-    if (value === "dark") setDarkMode(true);
-    else if (value === "light") setDarkMode(false);
-    // "auto" could use system preference, but for simplicity, we'll treat it as light here
-    else setDarkMode(false);
+    if (value === "dark") {
+      setTheme("dark"); // Update theme via ThemeProvider
+      setDarkMode(true); // Sync parent state
+    } else if (value === "light") {
+      setTheme("light");
+      setDarkMode(false);
+    } else {
+      setTheme("system");
+      setDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches); // Sync with system preference
+    }
   };
 
   return (
-    <div className="w-120 bg-white p-6 overflow-y-auto h-full shadow-lg border-r border-gray-200 relative">
+    <div className="w-150 bg-white p-6 overflow-y-auto h-full shadow-lg border-r border-gray-200 relative">
       <h2 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Settings</h2>
       <Separator className="mb-6 border-[#d9d9d9]" />
 
@@ -53,7 +64,7 @@ export default function SettingsPanel({
           </p>
           <Button
             variant="outline"
-            className="border-white text-white hover:bg-white hover:text-black transition-colors w-48 mb-4"
+            className="border-white text-black dark:text-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-colors w-48 mb-4"
           >
             Get it now
           </Button>
@@ -62,7 +73,6 @@ export default function SettingsPanel({
       </Card>
 
       <div className="space-y-6">
-        {/* Time and Date Section */}
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-medium text-[#1e1e1e]">Time and date</h3>
           <Switch
@@ -83,8 +93,8 @@ export default function SettingsPanel({
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="12h">12-hour </SelectItem>
-                <SelectItem value="24h">24-hour </SelectItem>
+                <SelectItem value="12h">12-hour</SelectItem>
+                <SelectItem value="24h">24-hour</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -109,7 +119,6 @@ export default function SettingsPanel({
           </div>
         </div>
 
-        {/* Quotes Section */}
         <div className="flex items-center justify-between pt-4">
           <h3 className="text-xl font-medium text-[#1e1e1e]">Quotes</h3>
           <Switch
@@ -138,7 +147,6 @@ export default function SettingsPanel({
           </div>
         </div>
 
-        {/* General Settings Section */}
         <div className="pt-4">
           <h3 className="text-xl font-medium text-[#1e1e1e]">General settings</h3>
           <Separator className="mt-2 border-[#d9d9d9]" />
@@ -172,7 +180,7 @@ export default function SettingsPanel({
                 <SelectValue placeholder="Select an option" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value="system">System</SelectItem>
                 <SelectItem value="light">Light</SelectItem>
                 <SelectItem value="dark">Dark</SelectItem>
               </SelectContent>
@@ -180,22 +188,8 @@ export default function SettingsPanel({
           </div>
         </div>
 
-        {/* Signup Button */}
         <div className="mt-10 flex justify-center">
           <Button className="bg-[#000000] text-white hover:bg-[#1e1e1e] w-48">Signup</Button>
-        </div>
-      </div>
-
-      {/* Right-side Icons */}
-      <div className="fixed right-0 top-0 h-full flex flex-col items-center justify-center gap-8 p-4 border-l border-[#d9d9d9]">
-        <div className="p-2 rounded-full hover:bg-[#f5f5f5] cursor-pointer">
-          <Play className="w-6 h-6" />
-        </div>
-        <div className="p-2 rounded-full hover:bg-[#f5f5f5] cursor-pointer">
-          <Image className="w-6 h-6" />
-        </div>
-        <div className="absolute bottom-4">
-          <Settings className="w-6 h-6" />
         </div>
       </div>
     </div>
