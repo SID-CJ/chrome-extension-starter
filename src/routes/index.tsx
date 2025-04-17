@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from "react"
-import { Settings, CirclePlay, Menu, Image, Play, Pause } from "lucide-react"
+import { Settings, CirclePlay, Menu, Image, Play, Pause, Clock4, Camera } from "lucide-react"
 import SettingsPanel from "./-components/settings-panel"
 import ListenPanel from "./-components/listen-panel"
 import ImageBackgroundPanel from "./-components/image-bg-panel"
@@ -19,6 +19,7 @@ function Index() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [darkMode, setDarkMode] = useState(false)
   const [currentBackground, setCurrentBackground] = useState(" #4a3b78")
+  const [currentPhotographer, setCurrentPhotographer] = useState("")
   const [timeAndDateVisible, setTimeAndDateVisible] = useState(true)
   const [quotesVisible, setQuotesVisible] = useState(true)
   const [timeFormat, setTimeFormat] = useState("12h")
@@ -82,13 +83,25 @@ function Index() {
         width: '100vw', // Ensure full viewport width
       }
 
+  const handleMainAreaClick = () => {
+    if (showSettings || showListenPanel || showImageBackgrounds) {
+      setShowSettings(false);
+      setShowListenPanel(false);
+      setShowImageBackgrounds(false);
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <div
         key={backgroundKey}
         className="flex-1 flex flex-col items-center justify-center relative p-2"
         style={backgroundStyles}
+        onClick={handleMainAreaClick}
       >
+        {/* Add a shadow overlay at the bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+        
         {timeAndDateVisible && (
           <Clock 
             currentTime={currentTime} 
@@ -97,11 +110,25 @@ function Index() {
           />
         )}
         
-        {quotesVisible && <Quote />}
+        {quotesVisible && (
+          <div className="absolute bottom-1/6 left-0 right-0 flex justify-center">
+            <Quote />
+          </div>
+        )}
         
-        <div className="absolute bottom-4 left-4 flex space-x-2">
+        {/* Add photographer credit at bottom left */}
+        {isImageUrl && currentPhotographer && (
+          <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-10">
+            <Camera className="w-5 h-5 text-white" />
+            <span className="text-white text-sm">
+               {currentPhotographer}
+            </span>
+          </div>
+        )}
+        
+        <div className="absolute bottom-4 right-4 flex space-x-2">
           <button 
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20" 
+            className="p-2 rounded-full bg-0 hover:bg-white/20" 
             onClick={() => {
               if (player.isPlaying()) {
                 player.pause();
@@ -122,13 +149,13 @@ function Index() {
             )}
           </button>
           <button 
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20" 
-            onClick={handleImageBackgroundsClick}
+            className="p-2 rounded-full bg-0 hover:bg-white/20" 
+            onClick={handleListenClick}
           >
-            <Image className="w-6 h-6 text-white" />
+            <Clock4 className="w-6 h-6 text-white" />
           </button>
           <button 
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20" 
+            className="p-2 rounded-full bg-0 hover:bg-white/20" 
             onClick={handleSettingsClick}
           >
             <Menu className="w-6 h-6 text-white" />
@@ -158,6 +185,8 @@ function Index() {
           currentBackground={currentBackground} 
           setCurrentBackground={setCurrentBackground}
           setShowImageBackgrounds={setShowImageBackgrounds}
+          currentPhotographer={currentPhotographer}
+          setCurrentPhotographer={setCurrentPhotographer}
         />
       )}
 

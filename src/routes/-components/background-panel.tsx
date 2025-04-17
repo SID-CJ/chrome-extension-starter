@@ -5,15 +5,19 @@ import { Card } from "@/components/ui/card"
 import { useState } from "react"
 
 const backgroundOptions = [
-  { name: "Purple", value: "#4a3b78" },
-  { name: "Blue", value: "#1a2980" },
-  { name: "Orange", value: "#ff7e5f" },
-  { name: "Forest", value: "#134e5e" },
-  { name: "Ocean", value: "#2980b9" },
-  { name: "Midnight", value: "#414345" },
-  { name: "Cherry", value: "#eb3349" },
-  { name: "Solid Black", value: "#121212" },
-  { name: "Solid White", value : "#ffff00" }, 
+  { name: "Grey", value: "#757575" },
+  { name: "Blue", value: "#4285F4" },
+  { name: "Aqua", value: "#00ACC1" },
+  { name: "Green", value: "#0F9D58" },
+  { name: "Viridian", value: "#1E8E3E" },
+  { name: "Cool Grey", value: "#9AA0A6" },
+  { name: "Citron", value: "#F4B400" },
+  { name: "Orange", value: "#FA7B17" },
+  { name: "Apricot", value: "#F6AE2D" },
+  { name: "Rose", value: "#DB4437" },
+  { name: "Pink", value: "#E91E63" },
+  { name: "Fuchsia", value: "#A142F4" },
+  { name: "Violet", value: "#673AB7" },
 ]
 
 interface ColorPaletteProps {
@@ -56,7 +60,7 @@ export default function ColorPalette({
             {backgroundOptions.map((option) => (
               <Card
                 key={option.name}
-                className={`aspect-square border-2 cursor-pointer ${
+                className={`aspect-square border-2 cursor-pointer rounded-none max-w-[180px] ${
                   selectedBackground === option.value ? "border-blue-500" : "border-[#d9d9d9]"
                 }`}
                 style={{ background: option.value }}

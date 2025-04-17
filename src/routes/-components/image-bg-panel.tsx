@@ -10,24 +10,29 @@ interface ImageBackgroundPanelProps {
   currentBackground: string
   setCurrentBackground: (background: string) => void
   setShowImageBackgrounds: (show: boolean) => void
+  currentPhotographer: string
+  setCurrentPhotographer: (photographer: string) => void
 }
 
 export default function ImageBackgroundPanel({
   currentBackground,
   setCurrentBackground,
   setShowImageBackgrounds,
+  setCurrentPhotographer,
 }: ImageBackgroundPanelProps) {
   const [selectedBackground, setSelectedBackground] = useState(currentBackground)
   const [showBackgrounds, setShowBackgrounds] = useState(false)
   const { data, isLoading, error } = useImageFetch()
 
-  const handleBackgroundChange = (backgroundUrl: string) => {
+  const handleBackgroundChange = (backgroundUrl: string, photographer: string = "") => {
     setSelectedBackground(backgroundUrl)
     setCurrentBackground(backgroundUrl)
+    setCurrentPhotographer(photographer)
   }
 
   const handleSolidColorsClick = () => {
     setShowBackgrounds(true)
+    setCurrentPhotographer("") // Clear photographer when switching to solid colors
   }
 
   if (showBackgrounds) {
@@ -82,7 +87,7 @@ export default function ImageBackgroundPanel({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {/* Solid Colors Card */}
             <Card
-              className="aspect-square border-2 cursor-pointer bg-black"
+              className="aspect-square border-2 cursor-pointer bg-black rounded-none max-w-[180px]"
               onClick={handleSolidColorsClick}
             >
               <div className="h-full w-full flex items-end p-2">
@@ -96,17 +101,12 @@ export default function ImageBackgroundPanel({
             {data?.images.map((image) => (
               <Card
                 key={image.id}
-                className={`aspect-square border-2 cursor-pointer bg-cover bg-center ${
+                className={`aspect-square border-2 cursor-pointer bg-cover bg-center rounded-none max-w-[180px] ${
                   selectedBackground === image.original_image_url ? "border-blue-500" : "border-[#d9d9d9]"
                 }`}
                 style={{ backgroundImage: `url(${image.thumbnail_url})` }}
-                onClick={() => handleBackgroundChange(image.original_image_url)}
+                onClick={() => handleBackgroundChange(image.original_image_url, image.photographer)}
               >
-                <div className="h-full w-full flex items-end p-2">
-                  <span className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                    {image.photographer}
-                  </span>
-                </div>
               </Card>
             ))}
           </div>
