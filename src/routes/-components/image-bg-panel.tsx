@@ -3,9 +3,15 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useImageFetch } from "@/api/image/useImageFetch"
 import ColorPalette from "./background-panel"
+import { getCachedImage, cacheImage } from "@/utils/image-cache"
+
+// Add a new interface for cached image data
+interface CachedImageData {
+  [key: string]: string; // Maps original URL to cached URL
+}
 
 interface ImageBackgroundPanelProps {
   currentBackground: string
@@ -13,6 +19,8 @@ interface ImageBackgroundPanelProps {
   setShowImageBackgrounds: (show: boolean) => void
   currentPhotographer: string
   setCurrentPhotographer: (photographer: string) => void
+  blurAmount?: number
+  setBlurAmount?: (amount: number) => void
 }
 
 export default function ImageBackgroundPanel({
@@ -20,12 +28,20 @@ export default function ImageBackgroundPanel({
   setCurrentBackground,
   setShowImageBackgrounds,
   setCurrentPhotographer,
+  blurAmount = 0,
+  setBlurAmount = () => {},
 }: ImageBackgroundPanelProps) {
+  // Add state for cached image URLs
+  const [cachedImages, setCachedImages] = useState<CachedImageData>({});
+  
   const [selectedBackground, setSelectedBackground] = useState(currentBackground)
   const [showBackgrounds, setShowBackgrounds] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedFrequency, setSelectedFrequency] = useState("Select an option")
   const { data, isLoading, error } = useImageFetch()
+
+  // Local blur state to track slider value
+  const [blur, setBlur] = useState(blurAmount)
 
   const handleBackgroundChange = (backgroundUrl: string, photographer: string = "") => {
     setSelectedBackground(backgroundUrl)
@@ -33,10 +49,43 @@ export default function ImageBackgroundPanel({
     setCurrentPhotographer(photographer)
   }
 
+  // Handler for blur slider changes
+  const handleBlurChange = (values: number[]) => {
+    const newBlurValue = values[0]
+    setBlur(newBlurValue)
+    setBlurAmount(newBlurValue)
+  }
+
   const handleSolidColorsClick = () => {
     setShowBackgrounds(true)
     setCurrentPhotographer("")
   }
+
+  // Load images from cache or fetch and cache them
+  useEffect(() => {
+    if (data?.images) {
+      // Process each image and try to cache it
+      data.images.forEach(async (image) => {
+        try {
+          // Try to get from cache first
+          let cachedUrl = await getCachedImage(image.thumbnail_url);
+          
+          // If not in cache, fetch and cache it
+          if (!cachedUrl) {
+            cachedUrl = await cacheImage(image.thumbnail_url);
+          }
+          
+          // Update the cached URLs state
+          setCachedImages(prev => ({
+            ...prev,
+            [image.thumbnail_url]: cachedUrl
+          }));
+        } catch (error) {
+          console.error('Failed to cache image:', error);
+        }
+      });
+    }
+  }, [data?.images]);
 
   if (showBackgrounds) {
     return (
@@ -105,7 +154,9 @@ export default function ImageBackgroundPanel({
                 className={`aspect-square border-2 cursor-pointer bg-cover bg-center rounded-none max-w-[180px] ${
                   selectedBackground === image.original_image_url ? "border-blue-500" : "border-[#d9d9d9]"
                 }`}
-                style={{ backgroundImage: `url(${image.thumbnail_url})` }}
+                style={{ 
+                  backgroundImage: `url(${cachedImages[image.thumbnail_url] || image.thumbnail_url})` 
+                }}
                 onClick={() => handleBackgroundChange(image.original_image_url, image.photographer)}
               >
               </Card>
@@ -162,9 +213,11 @@ export default function ImageBackgroundPanel({
               <label className="text-[#1b1b1b] font-medium ml-4 whitespace-nowrap">Blur</label>
               <Slider
                 className="w-48"
-                defaultValue={[25]}
-                max={100}
+                defaultValue={[blur]}
+                value={[blur]}
+                max={20}
                 step={1}
+                onValueChange={handleBlurChange}
               />
             </div>
           </div>

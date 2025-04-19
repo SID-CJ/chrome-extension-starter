@@ -278,13 +278,13 @@ function SoundCard({
   active?: boolean;
   onSelect: () => void;
   isPlaying?: boolean;
-}) {
+}) {  
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-start max-w-[180px]">
       {/* Thumbnail */}
       <div className="aspect-square relative group cursor-pointer w-full" onClick={onSelect}>
         <div
-          className={`w-full h-full rounded-md ${active ? "bg-[#121212]" : "bg-[#d9d9d9]"}`}
+          className={`w-full h-full rounded-none ${active ? "bg-[#121212]" : "bg-[#d9d9d9]"}`}
           style={thumbnailUrl ? { backgroundImage: `url(${thumbnailUrl})`, backgroundSize: "cover" } : {}}
         ></div>
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

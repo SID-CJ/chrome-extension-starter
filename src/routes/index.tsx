@@ -25,6 +25,7 @@ function Index() {
   const [timeFormat, setTimeFormat] = useState("12h")
   const [dateFormat, setDateFormat] = useState("mdy")
   const [backgroundKey, setBackgroundKey] = useState(0)
+  const [blurAmount, setBlurAmount] = useState(0) // Add blur amount state
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -68,20 +69,36 @@ function Index() {
   const backgroundStyles = isImageUrl
     ? {
         backgroundImage: `url(${currentBackground})`,
-        backgroundSize: 'cover', // Explicitly set to 'cover'
+        backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        color: darkMode ? 'inherit' : 'white',
-        height: '100vh', // Ensure full viewport height
-        width: '100vw', // Ensure full viewport width
+        filter: blurAmount > 0 ? `blur(${blurAmount}px)` : 'none', // Apply blur only to background
+        position: 'absolute' as const,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0, // Place it behind all content
       }
     : {
         background: currentBackground,
         backgroundSize: 'cover',
-        color: darkMode ? 'inherit' : 'white',
-        height: '100vh', // Ensure full viewport height
-        width: '100vw', // Ensure full viewport width
+        position: 'absolute' as const,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0, // Place it behind all content
       }
+
+  // Style for the content container
+  const contentStyles = {
+    position: 'relative' as const,
+    zIndex: 1, // Place content above background
+    height: '100%',
+    width: '100%',
+    color: darkMode ? 'inherit' : 'white',
+  }
 
   const handleMainAreaClick = () => {
     if (showSettings || showListenPanel || showImageBackgrounds) {
@@ -95,71 +112,77 @@ function Index() {
     <div className="flex h-screen w-screen overflow-hidden">
       <div
         key={backgroundKey}
-        className="flex-1 flex flex-col items-center justify-center relative p-2"
-        style={backgroundStyles}
+        className="flex-1 flex flex-col items-center justify-center relative p-0" // Changed p-2 to p-0
         onClick={handleMainAreaClick}
       >
-        {/* Add a shadow overlay at the bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+        {/* Separate background div with blur effect */}
+        <div style={backgroundStyles}></div>
         
-        {timeAndDateVisible && (
-          <Clock 
-            currentTime={currentTime} 
-            timeFormat={timeFormat}
-            dateFormat={dateFormat}
-          />
-        )}
-        
-        {quotesVisible && (
-          <div className="absolute bottom-1/6 left-0 right-0 flex justify-center">
-            <Quote />
-          </div>
-        )}
-        
-        {/* Add photographer credit at bottom left */}
-        {isImageUrl && currentPhotographer && (
-          <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-10">
-            <Camera className="w-5 h-5 text-white" />
-            <span className="text-white text-sm">
-               {currentPhotographer}
-            </span>
-          </div>
-        )}
-        
-        <div className="absolute bottom-4 right-4 flex space-x-2">
-          <button 
-            className="p-2 rounded-full bg-0 hover:bg-white/20" 
-            onClick={() => {
-              if (player.isPlaying()) {
-                player.pause();
-              } else {
-                if (!player.getCurrentTrackId()) {
-                  // If no track is loaded, open the panel to select one
-                  handleListenClick();
+        {/* Content container above the background */}
+        <div style={contentStyles} className="flex flex-col items-center justify-center w-full h-full">
+          {/* Fixed shadow overlay that covers the entire bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none w-full" 
+               style={{position: 'absolute', bottom: 0, left: 0, right: 0}}></div>
+          
+          {timeAndDateVisible && (
+            <Clock 
+              currentTime={currentTime} 
+              timeFormat={timeFormat}
+              dateFormat={dateFormat}
+            />
+          )}
+          
+          {quotesVisible && (
+            <div className="absolute bottom-1/6 left-0 right-0 flex justify-center">
+              <Quote />
+            </div>
+          )}
+          
+          {/* Add photographer credit at bottom left */}
+          {isImageUrl && currentPhotographer && (
+            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-10">
+              <Camera className="w-5 h-5 text-white" />
+              <span className="text-white text-sm">
+                {currentPhotographer}
+              </span>
+            </div>
+          )}
+          
+          <div className="absolute bottom-4 right-4 flex space-x-2">
+            <button 
+              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              onClick={() => {
+                if (player.isPlaying()) {
+                  player.pause();
                 } else {
-                  player.play();
+                  if (!player.getCurrentTrackId()) {
+                    // If no track is loaded, open the panel to select one
+                    handleListenClick();
+                  } else {
+                    player.play();
+                  }
                 }
-              }
-            }}
-          >
-            {player.isPlaying() ? (
-              <Pause className="w-6 h-6 text-white" />
-            ) : (
-              <Play className="w-6 h-6 text-white" />
-            )}
-          </button>
-          <button 
-            className="p-2 rounded-full bg-0 hover:bg-white/20" 
-            onClick={handleListenClick}
-          >
-            <Clock4 className="w-6 h-6 text-white" />
-          </button>
-          <button 
-            className="p-2 rounded-full bg-0 hover:bg-white/20" 
-            onClick={handleSettingsClick}
-          >
-            <Menu className="w-6 h-6 text-white" />
-          </button>
+              }}
+            >
+              {player.isPlaying() ? (
+                <Pause className="w-6 h-6 text-white" />
+              ) : (
+                <Play className="w-6 h-6 text-white" />
+              )}
+            </button>
+            <button 
+              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              onClick={handleListenClick}
+            >
+              <Clock4 className="w-6 h-6 text-white" />
+            </button>
+            <button 
+              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              onClick={handleSettingsClick}
+            >
+              <Menu className="w-6 h-6 text-white" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -187,6 +210,8 @@ function Index() {
           setShowImageBackgrounds={setShowImageBackgrounds}
           currentPhotographer={currentPhotographer}
           setCurrentPhotographer={setCurrentPhotographer}
+          blurAmount={blurAmount}
+          setBlurAmount={setBlurAmount}
         />
       )}
 
