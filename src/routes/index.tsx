@@ -313,7 +313,10 @@ function Index() {
       )}
 
       {(showSettings || showListenPanel || showImageBackgrounds) && (
-        <div className="flex flex-col items-center py-4 bg-white w-16 h-screen">
+        <div className="flex flex-col items-center py-4 bg-white w-16 h-screen relative">
+          {/* Vertical separator that runs along the height of the sidebar */}
+          <div className="absolute top-0 left-0 w-px h-full bg-gray-200 shadow-sm z-10"></div>
+          
           <img 
             src="/icons/web/Icon_48.png" 
             alt="Icon" 
