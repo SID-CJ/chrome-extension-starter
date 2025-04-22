@@ -8,12 +8,16 @@ import Clock from "./-components/clock"
 import Quote from "./-components/quote"
 import PlayerService from "@/services/PlayerService"
 import { loadSettings, saveSettings, listenForSettingsChanges } from "@/utils/chrome-storage"
+import { useTheme } from "./-components/theme-provider" // Import the theme hook
 
 export const Route = createFileRoute('/')({
   component: Index,
 })
 
 function Index() {
+  // Theme integration
+  const { theme } = useTheme(); // Get the current theme from ThemeProvider
+  
   // State declarations
   const [showSettings, setShowSettings] = useState(false)
   const [showListenPanel, setShowListenPanel] = useState(false)
@@ -32,13 +36,33 @@ function Index() {
   const [blurAmount, setBlurAmount] = useState(0)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
 
+  // Sync darkMode state with the theme from ThemeProvider
+  useEffect(() => {
+    const isDark = theme === 'dark' || 
+      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setDarkMode(isDark);
+  }, [theme]);
+
+  // Listen for system theme changes when using system preference
+  useEffect(() => {
+    if (theme !== 'system') return;
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      setDarkMode(e.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme]);
+
   // Load settings when component mounts
   useEffect(() => {
     const loadAppSettings = async () => {
       try {
         const settings = await loadSettings();
         
-        setDarkMode(settings.darkMode);
+        // Don't set darkMode here, it's controlled by the theme provider
         setTimeFormat(settings.timeFormat);
         setDateFormat(settings.dateFormat);
         setLanguage(settings.language);
@@ -63,7 +87,7 @@ function Index() {
   useEffect(() => {
     const unsubscribe = listenForSettingsChanges((changedSettings) => {
       // Update state for any changed settings
-      if ('darkMode' in changedSettings && changedSettings.darkMode !== undefined) setDarkMode(changedSettings.darkMode);
+      // Note: darkMode handling is done via the theme provider
       if ('timeFormat' in changedSettings && changedSettings.timeFormat !== undefined) setTimeFormat(changedSettings.timeFormat);
       if ('dateFormat' in changedSettings && changedSettings.dateFormat !== undefined) setDateFormat(changedSettings.dateFormat);
       if ('language' in changedSettings && changedSettings.language !== undefined) setLanguage(changedSettings.language);
@@ -83,7 +107,7 @@ function Index() {
     if (!settingsLoaded) return; // Don't save until initial load is complete
 
     saveSettings({
-      darkMode,
+      darkMode, // We still save darkMode to sync with other components
       timeFormat,
       dateFormat,
       language,
@@ -172,13 +196,13 @@ function Index() {
         zIndex: 0, // Place it behind all content
       }
 
-  // Style for the content container
+  // Style for the content container - use darkMode state that's synced with theme
   const contentStyles = {
     position: 'relative' as const,
     zIndex: 1, // Place content above background
     height: '100%',
     width: '100%',
-    color: darkMode ? 'inherit' : 'white',
+    color: 'white', // Always use white text for better visibility on backgrounds
   }
 
   const handleMainAreaClick = () => {
@@ -201,7 +225,8 @@ function Index() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className={`flex h-screen w-screen overflow-hidden ${darkMode ? 'dark' : ''}`}>
+      {/* Add the dark class to the root div based on darkMode state */}
       <div className="flex-1 flex flex-col items-center justify-center relative p-0"
           onClick={handleMainAreaClick}>
         {/* Separate background div with blur effect - using key only for this element */}
@@ -212,16 +237,18 @@ function Index() {
         
         {/* Content container above the background - NOT affected by backgroundKey */}
         <div style={contentStyles} className="flex flex-col items-center justify-center w-full h-full">
-          {/* Fixed shadow overlay that covers the entire bottom */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none w-full" 
-               style={{position: 'absolute', bottom: 0, left: 0, right: 0}}></div>
+          {/* Fixed shadow overlay that covers the entire bottom - with very low z-index */}
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/70 to-transparent pointer-events-none w-full" 
+               style={{position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 5}}></div>
           
           {timeAndDateVisible && (
-            <Clock 
-              currentTime={currentTime} 
-              timeFormat={timeFormat}
-              dateFormat={dateFormat}
-            />
+            <div className="mb-16"> {/* Added wrapper with margin-bottom to move the clock higher */}
+              <Clock 
+                currentTime={currentTime} 
+                timeFormat={timeFormat}
+                dateFormat={dateFormat}
+              />
+            </div>
           )}
           
           {quotesVisible && (
@@ -231,9 +258,13 @@ function Index() {
             </div>
           )}
           
-          {/* Add photographer credit at bottom left */}
+          {/* Photographer credit with higher z-index */}
           {isImageUrl && currentPhotographer && (
-            <div className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-10">
+            <div 
+              className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-20 cursor-pointer hover:bg-black/50 transition-colors"
+              onClick={() => window.open(currentBackground, '_blank')}
+              title="Open image source"
+            >
               <Camera className="w-5 h-5 text-white" />
               <span className="text-white text-sm">
                 {currentPhotographer}
@@ -241,9 +272,10 @@ function Index() {
             </div>
           )}
           
-          <div className="absolute bottom-4 right-4 flex space-x-2">
+          {/* Button container with higher z-index */}
+          <div className="absolute bottom-4 right-4 flex space-x-2 z-20">
             <button 
-              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              className="p-2 rounded-full bg-transparent hover:bg-white/20" 
               onClick={() => {
                 if (player.isPlaying()) {
                   player.pause();
@@ -264,13 +296,13 @@ function Index() {
               )}
             </button>
             <button 
-              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              className="p-2 rounded-full bg-transparent hover:bg-white/20" 
               onClick={handleListenClick}
             >
               <Clock4 className="w-6 h-6 text-white" />
             </button>
             <button 
-              className="p-2 rounded-full bg-0 hover:bg-white/20" 
+              className="p-2 rounded-full bg-transparent hover:bg-white/20" 
               onClick={handleSettingsClick}
             >
               <Menu className="w-6 h-6 text-white" />
@@ -313,9 +345,9 @@ function Index() {
       )}
 
       {(showSettings || showListenPanel || showImageBackgrounds) && (
-        <div className="flex flex-col items-center py-4 bg-white w-16 h-screen relative">
+        <div className="flex flex-col items-center py-4 bg-background border-l border-input w-16 h-screen relative">
           {/* Vertical separator that runs along the height of the sidebar */}
-          <div className="absolute top-0 left-0 w-px h-full bg-gray-200 shadow-sm z-10"></div>
+          <div className="absolute top-0 left-0 w-px h-full bg-border shadow-sm z-10"></div>
           
           <img 
             src="/icons/web/Icon_48.png" 
@@ -323,23 +355,23 @@ function Index() {
             className="w-8 h-8 mb-4" 
           />
           <button 
-            className={`p-2 rounded-full ${showListenPanel ? 'bg-[#cdcdcd]' : 'hover:bg-[#cdcdcd]'} mb-4`}
+            className={`p-2 rounded-full ${showListenPanel ? 'bg-accent' : 'hover:bg-accent/50'} mb-4`}
             onClick={handleListenClick}
           >
-            <CirclePlay className="w-6 h-6 text-[#1e1e1e]" />
+            <CirclePlay className="w-6 h-6 text-foreground" />
           </button>
           <button 
-            className={`p-2 rounded-full ${showImageBackgrounds ? 'bg-[#cdcdcd]' : 'hover:bg-[#cdcdcd]'} mb-4`}
+            className={`p-2 rounded-full ${showImageBackgrounds ? 'bg-accent' : 'hover:bg-accent/50'} mb-4`}
             onClick={handleImageBackgroundsClick}
           >
-            <Image className="w-6 h-6 text-[#1e1e1e]" />
+            <Image className="w-6 h-6 text-foreground" />
           </button>
           <div className="flex-grow" />
           <button 
-            className={`p-2 rounded-full ${showSettings ? 'bg-[#cdcdcd]' : 'hover:bg-[#cdcdcd]'}`} 
+            className={`p-2 rounded-full ${showSettings ? 'bg-accent' : 'hover:bg-accent/50'}`} 
             onClick={handleSettingsClick}
           >
-            <Settings className="w-6 h-6 text-[#1e1e1e]" />
+            <Settings className="w-6 h-6 text-foreground" />
           </button>
         </div>
       )}

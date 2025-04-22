@@ -44,24 +44,24 @@ export default function ColorPalette({
   }
 
   return (
-    <div className="w-150 flex h-screen bg-[#ffffff]">
+    <div className="w-150 flex h-screen bg-background text-foreground">
       <div className="flex-1 overflow-auto">
         <div className="p-4 md:p-6">
           <div className="flex items-center mb-4">
             <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackClick}>
-              <ArrowLeft className="h-6 w-6 text-[#000000]" />
+              <ArrowLeft className="h-6 w-6" />
             </Button>
-            <h1 className="text-2xl font-bold text-[#000000]">Solid colors</h1>
+            <h1 className="text-2xl font-bold">Solid colors</h1>
           </div>
 
-          <Separator className="my-4 bg-[#d9d9d9]" />
+          <Separator className="my-4" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {backgroundOptions.map((option) => (
               <Card
                 key={option.name}
                 className={`aspect-square border-2 cursor-pointer rounded-none max-w-[180px] ${
-                  selectedBackground === option.value ? "border-blue-500" : "border-[#d9d9d9]"
+                  selectedBackground === option.value ? "border-blue-500" : "border-[#d9d9d9] dark:border-gray-700"
                 }`}
                 style={{ background: option.value }}
                 onClick={() => handleBackgroundChange(option.value)}

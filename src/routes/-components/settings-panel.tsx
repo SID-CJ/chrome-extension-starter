@@ -45,24 +45,26 @@ export default function SettingsPanel({
 
   const handleDarkModeChange = (value: 'dark' | 'light' | 'system') => {
     setDarkModeOption(value);
+    setTheme(value); // Update theme via ThemeProvider
+    
+    // Sync parent state based on the current or system preference
     if (value === "dark") {
-      setTheme("dark"); // Update theme via ThemeProvider
-      setDarkMode(true); // Sync parent state
+      setDarkMode(true);
     } else if (value === "light") {
-      setTheme("light");
       setDarkMode(false);
-    } else {
-      setTheme("system");
-      setDarkMode(window.matchMedia("(prefers-color-scheme: dark)").matches); // Sync with system preference
+    } else { // system
+      // For system mode, check the system preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setDarkMode(prefersDark);
     }
   };
 
   return (
-    <div className="w-150 bg-white p-6 overflow-y-auto h-full shadow-lg border-r border-gray-200 relative">
-      <h2 className="text-2xl font-bold mb-6 text-[#1e1e1e]">Settings</h2>
-      <Separator className="mb-6 border-[#d9d9d9]" />
+    <div className="w-150 bg-background text-foreground p-6 overflow-y-auto h-full shadow-lg border-r border-input relative">
+      <h2 className="text-2xl font-bold mb-6">Settings</h2>
+      <Separator className="mb-6" />
 
-      <Card className="bg-[#000000] text-white mb-8">
+      <Card className="bg-primary text-primary-foreground mb-8">
         <CardContent className="flex flex-col items-center justify-center py-8 px-4 text-center">
           <p className="text-xl mb-4">
             Get a <span className="font-bold">Life-Time</span> account for just{" "}
@@ -70,7 +72,7 @@ export default function SettingsPanel({
           </p>
           <Button
             variant="outline"
-            className="border-white text-black dark:text-white hover:bg-white hover:text-black dark:hover:bg-black dark:hover:text-white transition-colors w-48 mb-4"
+            className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors w-48 mb-4 font-medium"
           >
             Get it now
           </Button>
@@ -80,18 +82,18 @@ export default function SettingsPanel({
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-medium text-[#1e1e1e]">Time and date</h3>
+          <h3 className="text-xl font-medium">Time and date</h3>
           <Switch
             checked={timeAndDateVisible}
             onCheckedChange={setTimeAndDateVisible}
             className="data-[state=checked]:bg-[#65d46e]"
           />
         </div>
-        <Separator className="border-[#d9d9d9]" />
+        <Separator />
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center">
-            <label className="text-base text-[#858585]">Time format</label>
+            <label className="text-base text-muted-foreground">Time format</label>
           </div>
           <div className="col-span-2">
             <Select value={timeFormat} onValueChange={setTimeFormat}>
@@ -108,7 +110,7 @@ export default function SettingsPanel({
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center">
-            <label className="text-base text-[#858585]">Date format</label>
+            <label className="text-base text-muted-foreground">Date format</label>
           </div>
           <div className="col-span-2">
             <Select value={dateFormat} onValueChange={setDateFormat}>
@@ -126,18 +128,18 @@ export default function SettingsPanel({
         </div>
 
         <div className="flex items-center justify-between pt-4">
-          <h3 className="text-xl font-medium text-[#1e1e1e]">Quotes</h3>
+          <h3 className="text-xl font-medium">Quotes</h3>
           <Switch
             checked={quotesVisible}
             onCheckedChange={setQuotesVisible}
             className="data-[state=checked]:bg-[#65d46e]"
           />
         </div>
-        <Separator className="border-[#d9d9d9]" />
+        <Separator />
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center">
-            <label className="text-base text-[#858585]">Frequency</label>
+            <label className="text-base text-muted-foreground">Frequency</label>
           </div>
           <div className="col-span-2">
             <Select value={quoteFrequency} onValueChange={setQuoteFrequency}>
@@ -154,13 +156,13 @@ export default function SettingsPanel({
         </div>
 
         <div className="pt-4">
-          <h3 className="text-xl font-medium text-[#1e1e1e]">General settings</h3>
-          <Separator className="mt-2 border-[#d9d9d9]" />
+          <h3 className="text-xl font-medium">General settings</h3>
+          <Separator className="mt-2" />
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center">
-            <label className="text-base text-[#858585]">Language</label>
+            <label className="text-base text-muted-foreground">Language</label>
           </div>
           <div className="col-span-2">
             <Select value={language} onValueChange={setLanguage}>
@@ -178,7 +180,7 @@ export default function SettingsPanel({
 
         <div className="grid grid-cols-3 gap-4">
           <div className="flex items-center">
-            <label className="text-base text-[#858585]">Dark mode</label>
+            <label className="text-base text-muted-foreground">Dark mode</label>
           </div>
           <div className="col-span-2">
             <Select value={darkModeOption} onValueChange={handleDarkModeChange}>
@@ -195,7 +197,7 @@ export default function SettingsPanel({
         </div>
 
         <div className="mt-10 flex justify-center">
-          <Button className="bg-[#000000] text-white hover:bg-[#1e1e1e] w-48">Signup</Button>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 w-48">Signup</Button>
         </div>
       </div>
     </div>

@@ -96,49 +96,49 @@ export default function AmbientSoundPlayer() {
   };
 
   return (
-    <div className="w-150 flex flex-col min-h-screen bg-white">
+    <div className="w-150 flex flex-col min-h-screen bg-background text-foreground">
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 max-w-3xl mx-auto w-full p-4 overflow-y-auto">
         <div className="space-y-1 mb-4">
-          <h1 className="text-3xl font-bold text-[#000000]">Listen now</h1>
-          <p className="text-sm text-[#858585]">Ambient sounds picked for your mood</p>
+          <h1 className="text-3xl font-bold">Listen now</h1>
+          <p className="text-sm text-muted-foreground">Ambient sounds picked for your mood</p>
         </div>
 
         <Tabs defaultValue="all" className="mb-4">
-          <TabsList className="bg-white border border-[#d9d9d9] rounded-full p-1 h-10 w-full">
+          <TabsList className="bg-background border border-input rounded-full p-1 h-10 w-full">
             <TabsTrigger
               value="all"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               All
             </TabsTrigger>
             <TabsTrigger
               value="work"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Work
             </TabsTrigger>
             <TabsTrigger
               value="focus"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Focus
             </TabsTrigger>
             <TabsTrigger
               value="study"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Study
             </TabsTrigger>
             <TabsTrigger
               value="relax"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Relax
             </TabsTrigger>
             <TabsTrigger
               value="meditate"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-[#000000] data-[state=active]:text-white"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Meditate
             </TabsTrigger>
@@ -149,9 +149,9 @@ export default function AmbientSoundPlayer() {
 
         {/* Tracks Grid */}
         {isLoading ? (
-          <div className="text-center text-gray-500">Loading tracks...</div>
+          <div className="text-center text-muted-foreground">Loading tracks...</div>
         ) : isError ? (
-          <div className="text-center text-red-500">Failed to load tracks</div>
+          <div className="text-center text-destructive">Failed to load tracks</div>
         ) : (
           <div className="grid grid-cols-3 gap-4 mb-6">
             {data && data.tracks && data.tracks.length > 0 ? (
@@ -166,7 +166,7 @@ export default function AmbientSoundPlayer() {
                 />
               ))
             ) : (
-              <div className="col-span-3 text-center text-gray-500">No tracks available</div>
+              <div className="col-span-3 text-center text-muted-foreground">No tracks available</div>
             )}
           </div>
         )}
@@ -174,7 +174,7 @@ export default function AmbientSoundPlayer() {
 
       {/* Fixed Player Controls */}
       {data?.tracks && data.tracks.length > 0 && (
-        <div className="border-t border-[#d9d9d9] py-2 px-4">
+        <div className="border-t border-input py-2 px-4">
           <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
             <div className="flex items-center gap-2">
               {activeTrackId && data.tracks.find((t) => t.id === activeTrackId)?.thumbnail_url ? (
@@ -184,7 +184,7 @@ export default function AmbientSoundPlayer() {
                   className="w-8 h-8 rounded"
                 />
               ) : (
-                <div className="w-8 h-8 bg-[#d9d9d9] rounded"></div>
+                <div className="w-8 h-8 bg-muted rounded"></div>
               )}
               <span className="text-sm font-medium">
                 {activeTrackId
@@ -253,7 +253,7 @@ export default function AmbientSoundPlayer() {
                   </HoverCardContent>
                 </HoverCard>
                 {remainingTime !== null && (
-                  <span className="text-xs text-[#858585]">{formatTime(remainingTime)}</span>
+                  <span className="text-xs text-muted-foreground">{formatTime(remainingTime)}</span>
                 )}
               </div>
               
@@ -261,7 +261,6 @@ export default function AmbientSoundPlayer() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
@@ -284,11 +283,11 @@ function SoundCard({
       {/* Thumbnail */}
       <div className="aspect-square relative group cursor-pointer w-full" onClick={onSelect}>
         <div
-          className={`w-full h-full rounded-none ${active ? "bg-[#121212]" : "bg-[#d9d9d9]"}`}
+          className={`w-full h-full rounded-none ${active ? "bg-primary/20" : "bg-muted"}`}
           style={thumbnailUrl ? { backgroundImage: `url(${thumbnailUrl})`, backgroundSize: "cover" } : {}}
         ></div>
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="outline" size="icon" className="rounded-full h-8 w-8 bg-white/80 border-none">
+          <Button variant="outline" size="icon" className="rounded-full h-8 w-8 bg-background/80 border-none">
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </Button>
         </div>
@@ -297,7 +296,7 @@ function SoundCard({
       {title && (
         <div className="mt-2 w-full overflow-hidden">
           <h3
-            className={`text-sm font-medium text-[#121212] whitespace-nowrap ${
+            className={`text-sm font-medium whitespace-nowrap ${
               title.length > 20 ? "animate-marquee" : ""
             }`}
           >
