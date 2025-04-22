@@ -3,15 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useImageFetch } from "@/api/image/useImageFetch"
 import ColorPalette from "./background-panel"
-import { getCachedImage, cacheImage } from "@/utils/image-cache"
-
-// Add a new interface for cached image data
-interface CachedImageData {
-  [key: string]: string; // Maps original URL to cached URL
-}
 
 interface ImageBackgroundPanelProps {
   currentBackground: string
@@ -31,8 +25,6 @@ export default function ImageBackgroundPanel({
   blurAmount = 0,
   setBlurAmount = () => {},
 }: ImageBackgroundPanelProps) {
-  // Add state for cached image URLs
-  const [cachedImages, setCachedImages] = useState<CachedImageData>({});
   
   const [selectedBackground, setSelectedBackground] = useState(currentBackground)
   const [showBackgrounds, setShowBackgrounds] = useState(false)
@@ -60,32 +52,6 @@ export default function ImageBackgroundPanel({
     setShowBackgrounds(true)
     setCurrentPhotographer("")
   }
-
-  // Load images from cache or fetch and cache them
-  useEffect(() => {
-    if (data?.images) {
-      // Process each image and try to cache it
-      data.images.forEach(async (image) => {
-        try {
-          // Try to get from cache first
-          let cachedUrl = await getCachedImage(image.thumbnail_url);
-          
-          // If not in cache, fetch and cache it
-          if (!cachedUrl) {
-            cachedUrl = await cacheImage(image.thumbnail_url);
-          }
-          
-          // Update the cached URLs state
-          setCachedImages(prev => ({
-            ...prev,
-            [image.thumbnail_url]: cachedUrl
-          }));
-        } catch (error) {
-          console.error('Failed to cache image:', error);
-        }
-      });
-    }
-  }, [data?.images]);
 
   if (showBackgrounds) {
     return (
@@ -155,7 +121,7 @@ export default function ImageBackgroundPanel({
                   selectedBackground === image.original_image_url ? "border-blue-500" : "border-[#d9d9d9]"
                 }`}
                 style={{ 
-                  backgroundImage: `url(${cachedImages[image.thumbnail_url] || image.thumbnail_url})` 
+                  backgroundImage: `url(${image.thumbnail_url})` // Use original URL directly
                 }}
                 onClick={() => handleBackgroundChange(image.original_image_url, image.photographer)}
               >

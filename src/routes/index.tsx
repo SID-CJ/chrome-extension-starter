@@ -6,13 +6,15 @@ import ListenPanel from "./-components/listen-panel"
 import ImageBackgroundPanel from "./-components/image-bg-panel"
 import Clock from "./-components/clock"
 import Quote from "./-components/quote"
-import PlayerService from "@/services/PlayerService";
+import PlayerService from "@/services/PlayerService"
+import { loadSettings, saveSettings, listenForSettingsChanges } from "@/utils/chrome-storage"
 
 export const Route = createFileRoute('/')({
   component: Index,
 })
 
 function Index() {
+  // State declarations
   const [showSettings, setShowSettings] = useState(false)
   const [showListenPanel, setShowListenPanel] = useState(false)
   const [showImageBackgrounds, setShowImageBackgrounds] = useState(false)
@@ -24,8 +26,87 @@ function Index() {
   const [quotesVisible, setQuotesVisible] = useState(true)
   const [timeFormat, setTimeFormat] = useState("12h")
   const [dateFormat, setDateFormat] = useState("mdy")
+  const [language, setLanguage] = useState("en")
+  const [quoteFrequency, setQuoteFrequency] = useState("daily")
   const [backgroundKey, setBackgroundKey] = useState(0)
-  const [blurAmount, setBlurAmount] = useState(0) // Add blur amount state
+  const [blurAmount, setBlurAmount] = useState(0)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
+
+  // Load settings when component mounts
+  useEffect(() => {
+    const loadAppSettings = async () => {
+      try {
+        const settings = await loadSettings();
+        
+        setDarkMode(settings.darkMode);
+        setTimeFormat(settings.timeFormat);
+        setDateFormat(settings.dateFormat);
+        setLanguage(settings.language);
+        setQuoteFrequency(settings.quoteFrequency);
+        setTimeAndDateVisible(settings.timeAndDateVisible);
+        setQuotesVisible(settings.quotesVisible);
+        setCurrentBackground(settings.currentBackground);
+        setCurrentPhotographer(settings.currentPhotographer);
+        setBlurAmount(settings.blurAmount);
+        
+        setSettingsLoaded(true);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        setSettingsLoaded(true); // Mark as loaded even on error
+      }
+    };
+
+    loadAppSettings();
+  }, []);
+
+  // Listen for settings changes from other tabs/windows
+  useEffect(() => {
+    const unsubscribe = listenForSettingsChanges((changedSettings) => {
+      // Update state for any changed settings
+      if ('darkMode' in changedSettings && changedSettings.darkMode !== undefined) setDarkMode(changedSettings.darkMode);
+      if ('timeFormat' in changedSettings && changedSettings.timeFormat !== undefined) setTimeFormat(changedSettings.timeFormat);
+      if ('dateFormat' in changedSettings && changedSettings.dateFormat !== undefined) setDateFormat(changedSettings.dateFormat);
+      if ('language' in changedSettings && changedSettings.language !== undefined) setLanguage(changedSettings.language);
+      if ('quoteFrequency' in changedSettings && changedSettings.quoteFrequency !== undefined) setQuoteFrequency(changedSettings.quoteFrequency);
+      if ('timeAndDateVisible' in changedSettings && changedSettings.timeAndDateVisible !== undefined) setTimeAndDateVisible(changedSettings.timeAndDateVisible);
+      if ('quotesVisible' in changedSettings && changedSettings.quotesVisible !== undefined) setQuotesVisible(changedSettings.quotesVisible);
+      if ('currentBackground' in changedSettings && changedSettings.currentBackground !== undefined) setCurrentBackground(changedSettings.currentBackground);
+      if ('currentPhotographer' in changedSettings && changedSettings.currentPhotographer !== undefined) setCurrentPhotographer(changedSettings.currentPhotographer);
+      if ('blurAmount' in changedSettings && changedSettings.blurAmount !== undefined) setBlurAmount(changedSettings.blurAmount);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // Save settings whenever relevant state changes
+  useEffect(() => {
+    if (!settingsLoaded) return; // Don't save until initial load is complete
+
+    saveSettings({
+      darkMode,
+      timeFormat,
+      dateFormat,
+      language,
+      quoteFrequency,
+      timeAndDateVisible,
+      quotesVisible,
+      currentBackground,
+      currentPhotographer,
+      blurAmount,
+    });
+  }, [
+    darkMode, 
+    timeFormat, 
+    dateFormat, 
+    language, 
+    quoteFrequency, 
+    timeAndDateVisible, 
+    quotesVisible, 
+    currentBackground,
+    currentPhotographer,
+    blurAmount,
+    settingsLoaded
+  ]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -108,17 +189,28 @@ function Index() {
     }
   };
 
+  const updateQuoteFrequency = (frequency: string) => {
+    // Validate that the frequency is one of our accepted values
+    if (['hourly', 'daily', 'weekly'].includes(frequency)) {
+      localStorage.setItem('quoteFrequency', frequency);
+      
+      // Force a new fetch when changing frequency
+      localStorage.removeItem('lastQuoteFetchTime');
+      setQuoteFrequency(frequency);
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      <div
-        key={backgroundKey}
-        className="flex-1 flex flex-col items-center justify-center relative p-0" // Changed p-2 to p-0
-        onClick={handleMainAreaClick}
-      >
-        {/* Separate background div with blur effect */}
-        <div style={backgroundStyles}></div>
+      <div className="flex-1 flex flex-col items-center justify-center relative p-0"
+          onClick={handleMainAreaClick}>
+        {/* Separate background div with blur effect - using key only for this element */}
+        <div 
+          key={backgroundKey}
+          style={backgroundStyles}
+        ></div>
         
-        {/* Content container above the background */}
+        {/* Content container above the background - NOT affected by backgroundKey */}
         <div style={contentStyles} className="flex flex-col items-center justify-center w-full h-full">
           {/* Fixed shadow overlay that covers the entire bottom */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent pointer-events-none w-full" 
@@ -134,7 +226,8 @@ function Index() {
           
           {quotesVisible && (
             <div className="absolute bottom-1/6 left-0 right-0 flex justify-center">
-              <Quote />
+              {/* Use a stable key for Quote that doesn't change with background */}
+              <Quote key="stable-quote-component" />
             </div>
           )}
           
@@ -198,6 +291,10 @@ function Index() {
           setTimeFormat={setTimeFormat}
           dateFormat={dateFormat}
           setDateFormat={setDateFormat}
+          language={language}
+          setLanguage={setLanguage}
+          quoteFrequency={quoteFrequency}
+          setQuoteFrequency={updateQuoteFrequency}
         />
       )}
 

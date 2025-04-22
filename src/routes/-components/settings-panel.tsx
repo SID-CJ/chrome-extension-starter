@@ -19,6 +19,10 @@ interface SettingsPanelProps {
   setTimeFormat: (value: string) => void;
   dateFormat: string;
   setDateFormat: (value: string) => void;
+  language: string;
+  setLanguage: (value: string) => void;
+  quoteFrequency: string;
+  setQuoteFrequency: (value: string) => void;
 }
 
 export default function SettingsPanel({
@@ -31,10 +35,12 @@ export default function SettingsPanel({
   setTimeFormat,
   dateFormat,
   setDateFormat,
+  language,
+  setLanguage,
+  quoteFrequency,
+  setQuoteFrequency
 }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme(); // Use theme and setTheme from ThemeProvider
-  const [quoteFrequency, setQuoteFrequency] = useState("daily");
-  const [language, setLanguage] = useState("en");
   const [darkModeOption, setDarkModeOption] = useState<'dark' | 'light' | 'system'>(theme as 'dark' | 'light' | 'system'); // Sync with theme provider
 
   const handleDarkModeChange = (value: 'dark' | 'light' | 'system') => {
