@@ -12,10 +12,6 @@ A feature-rich new tab replacement Chrome extension that transforms your browsin
 - **Dark/Light Mode**: Automatic system detection or manual selection
 - **Persistent Settings**: Your preferences are saved across sessions
 
-## Screenshots
-
-(Add screenshots here)
-
 ## Installation
 
 ### From Chrome Web Store
