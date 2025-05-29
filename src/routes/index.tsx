@@ -26,6 +26,7 @@ function Index() {
   const [darkMode, setDarkMode] = useState(false)
   const [currentBackground, setCurrentBackground] = useState(" #4a3b78")
   const [currentPhotographer, setCurrentPhotographer] = useState("")
+  const [pageUrl, setPageUrl] = useState("") // Add this new state
   const [timeAndDateVisible, setTimeAndDateVisible] = useState(true)
   const [quotesVisible, setQuotesVisible] = useState(true)
   const [timeFormat, setTimeFormat] = useState("12h")
@@ -71,6 +72,7 @@ function Index() {
         setQuotesVisible(settings.quotesVisible);
         setCurrentBackground(settings.currentBackground);
         setCurrentPhotographer(settings.currentPhotographer);
+        setPageUrl(settings.pageUrl || ""); // Add this line
         setBlurAmount(settings.blurAmount);
         
         setSettingsLoaded(true);
@@ -96,6 +98,7 @@ function Index() {
       if ('quotesVisible' in changedSettings && changedSettings.quotesVisible !== undefined) setQuotesVisible(changedSettings.quotesVisible);
       if ('currentBackground' in changedSettings && changedSettings.currentBackground !== undefined) setCurrentBackground(changedSettings.currentBackground);
       if ('currentPhotographer' in changedSettings && changedSettings.currentPhotographer !== undefined) setCurrentPhotographer(changedSettings.currentPhotographer);
+      if ('pageUrl' in changedSettings && changedSettings.pageUrl !== undefined) setPageUrl(typeof changedSettings.pageUrl === 'string' ? changedSettings.pageUrl : "");
       if ('blurAmount' in changedSettings && changedSettings.blurAmount !== undefined) setBlurAmount(changedSettings.blurAmount);
     });
 
@@ -116,6 +119,7 @@ function Index() {
       quotesVisible,
       currentBackground,
       currentPhotographer,
+      pageUrl, // Add this line
       blurAmount,
     });
   }, [
@@ -128,6 +132,7 @@ function Index() {
     quotesVisible, 
     currentBackground,
     currentPhotographer,
+    pageUrl, // Add this to the dependency array
     blurAmount,
     settingsLoaded
   ]);
@@ -262,8 +267,8 @@ function Index() {
           {isImageUrl && currentPhotographer && (
             <div 
               className="absolute bottom-4 left-4 flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-full z-20 cursor-pointer hover:bg-black/50 transition-colors"
-              onClick={() => window.open(currentBackground, '_blank')}
-              title="Open image source"
+              onClick={() => pageUrl ? window.open(pageUrl, '_blank') : null}
+              title="Visit photographer page"
             >
               <Camera className="w-5 h-5 text-white" />
               <span className="text-white text-sm">
@@ -339,6 +344,8 @@ function Index() {
           setShowImageBackgrounds={setShowImageBackgrounds}
           currentPhotographer={currentPhotographer}
           setCurrentPhotographer={setCurrentPhotographer}
+          pageUrl={pageUrl} 
+          setPageUrl={setPageUrl}
           blurAmount={blurAmount}
           setBlurAmount={setBlurAmount}
         />

@@ -13,6 +13,8 @@ interface ImageBackgroundPanelProps {
   setShowImageBackgrounds: (show: boolean) => void
   currentPhotographer: string
   setCurrentPhotographer: (photographer: string) => void
+  pageUrl?: string
+  setPageUrl?: (url: string) => void
   blurAmount?: number
   setBlurAmount?: (amount: number) => void
 }
@@ -22,6 +24,8 @@ export default function ImageBackgroundPanel({
   setCurrentBackground,
   setShowImageBackgrounds,
   setCurrentPhotographer,
+  pageUrl = "",
+  setPageUrl = () => {},
   blurAmount = 0,
   setBlurAmount = () => {},
 }: ImageBackgroundPanelProps) {
@@ -36,10 +40,11 @@ export default function ImageBackgroundPanel({
   // Local blur state to track slider value
   const [blur, setBlur] = useState(blurAmount)
 
-  const handleBackgroundChange = (backgroundUrl: string, photographer: string = "") => {
+  const handleBackgroundChange = (backgroundUrl: string, photographer: string = "", photoUrl: string = "") => {
     setSelectedBackground(backgroundUrl)
     setCurrentBackground(backgroundUrl)
     setCurrentPhotographer(photographer)
+    setPageUrl(photoUrl)
   }
 
   // Handler for blur slider changes
@@ -129,8 +134,15 @@ export default function ImageBackgroundPanel({
                 style={{ 
                   backgroundImage: `url(${image.thumbnail_url})` // Use original URL directly
                 }}
-                onClick={() => handleBackgroundChange(image.original_image_url, image.photographer)}
+                onClick={() => handleBackgroundChange(image.original_image_url, image.photographer, image.page_url)}
               >
+                {selectedBackground === image.original_image_url && pageUrl && (
+                  <div className="h-full w-full flex items-end p-2">
+                    <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                      Photo credit
+                    </a>
+                  </div>
+                )}
               </Card>
             ))}
           </div>

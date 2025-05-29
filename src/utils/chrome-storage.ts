@@ -9,6 +9,7 @@ export interface AppSettings {
   quotesVisible: boolean;
   currentBackground: string;
   currentPhotographer: string;
+  pageUrl?: string;
   blurAmount: number;
 }
 
@@ -23,6 +24,7 @@ export const defaultSettings: AppSettings = {
   quotesVisible: true,
   currentBackground: " #4a3b78",
   currentPhotographer: "",
+  pageUrl:"",
   blurAmount: 0,
 };
 
