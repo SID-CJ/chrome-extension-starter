@@ -18,6 +18,7 @@ const backgroundOptions = [
   { name: "Pink", value: "#E91E63" },
   { name: "Fuchsia", value: "#A142F4" },
   { name: "Violet", value: "#673AB7" },
+  { name: "Violet", value: "#000000" },
 ]
 
 interface ColorPaletteProps {
@@ -25,23 +26,28 @@ interface ColorPaletteProps {
   setCurrentBackground: (background: string) => void
   setShowBackgrounds: (show: boolean) => void
   setShowImageBackgrounds: (show: boolean) => void
+  currentSolidColor?: string
+  setCurrentSolidColor?: (color: string) => void
 }
 
 export default function ColorPalette({
   currentBackground,
   setCurrentBackground,
   setShowBackgrounds,
+  currentSolidColor = "black",
+  setCurrentSolidColor = () => {},
 }: ColorPaletteProps) {
-  const [selectedBackground, setSelectedBackground] = useState(currentBackground)
-
-  const handleBackgroundChange = (background: string) => {
-    setSelectedBackground(background)
-    setCurrentBackground(background)
-  }
+  const [selectedBackground, setSelectedBackground] = useState(currentSolidColor || currentBackground)
 
   const handleBackClick = () => {
     setShowBackgrounds(false)
   }
+
+  const handleColorSelect = (color: string) => {
+    setSelectedBackground(color);
+    setCurrentBackground(color);
+    setCurrentSolidColor(color);
+  };
 
   return (
     <div className="w-150 flex h-screen bg-background text-foreground">
@@ -64,7 +70,7 @@ export default function ColorPalette({
                   selectedBackground === option.value ? "border-blue-500" : "border-[#d9d9d9] dark:border-gray-700"
                 }`}
                 style={{ background: option.value }}
-                onClick={() => handleBackgroundChange(option.value)}
+                onClick={() => handleColorSelect(option.value)}
               />
             ))}
           </div>

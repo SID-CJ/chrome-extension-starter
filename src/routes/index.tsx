@@ -29,7 +29,7 @@ function Index() {
   const [timeAndDateVisible, setTimeAndDateVisible] = useState(true)
   const [quotesVisible, setQuotesVisible] = useState(true)
   const [timeFormat, setTimeFormat] = useState("12h")
-  const [dateFormat, setDateFormat] = useState("mdy")
+  const [dateFormat, setDateFormat] = useState("default")
   const [language, setLanguage] = useState("en")
   const [quoteFrequency, setQuoteFrequency] = useState("daily")
   const [backgroundKey, setBackgroundKey] = useState(0)
@@ -303,7 +303,7 @@ function Index() {
             </button>
             <button 
               className="p-2 rounded-full bg-transparent hover:bg-white/20" 
-              onClick={handleSettingsClick}
+              onClick={handleListenClick}
             >
               <Menu className="w-6 h-6 text-white" />
             </button>

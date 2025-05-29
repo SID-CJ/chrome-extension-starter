@@ -1,9 +1,9 @@
-import { ArrowLeft, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ChevronDown } from "lucide-react"
+//import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useImageFetch } from "@/api/image/useImageFetch"
 import ColorPalette from "./background-panel"
 
@@ -30,6 +30,7 @@ export default function ImageBackgroundPanel({
   const [showBackgrounds, setShowBackgrounds] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedFrequency, setSelectedFrequency] = useState("Select an option")
+  const [currentSolidColor, setCurrentSolidColor] = useState("black") // Add this state
   const { data, isLoading, error } = useImageFetch()
 
   // Local blur state to track slider value
@@ -53,6 +54,15 @@ export default function ImageBackgroundPanel({
     setCurrentPhotographer("")
   }
 
+  // Extract color value from background string if it's a CSS color
+  useEffect(() => {
+    if (currentBackground.startsWith('#') || 
+        currentBackground.startsWith('rgb') ||
+        currentBackground.startsWith('hsl')) {
+      setCurrentSolidColor(currentBackground);
+    }
+  }, [currentBackground]);
+
   if (showBackgrounds) {
     return (
       <ColorPalette
@@ -60,6 +70,8 @@ export default function ImageBackgroundPanel({
         setCurrentBackground={setCurrentBackground}
         setShowBackgrounds={setShowBackgrounds}
         setShowImageBackgrounds={setShowImageBackgrounds}
+        currentSolidColor={currentSolidColor}
+        setCurrentSolidColor={setCurrentSolidColor}
       />
     )
   }
@@ -89,14 +101,7 @@ export default function ImageBackgroundPanel({
       <div className="flex-1 overflow-auto flex flex-col">
         <div className="p-4 md:p-6 flex flex-col h-full">
           <div className="flex items-center mb-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mr-2"
-              onClick={() => setShowImageBackgrounds(false)}
-            >
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
+            
             <h1 className="text-2xl font-bold">Image Backgrounds</h1>
           </div>
 
@@ -104,7 +109,8 @@ export default function ImageBackgroundPanel({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             <Card
-              className="aspect-square border-2 cursor-pointer bg-black rounded-none max-w-[180px]"
+              className="aspect-square border-2 cursor-pointer rounded-none max-w-[180px]"
+              style={{ backgroundColor: currentSolidColor }}
               onClick={handleSolidColorsClick}
             >
               <div className="h-full w-full flex items-end p-2">
