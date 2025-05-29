@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+//import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -64,7 +64,7 @@ export default function SettingsPanel({
       <h2 className="text-2xl font-bold mb-6">Settings</h2>
       <Separator className="mb-6" />
 
-      <Card className="bg-primary text-primary-foreground mb-8">
+      {/* <Card className="bg-primary text-primary-foreground mb-8">
         <CardContent className="flex flex-col items-center justify-center py-8 px-4 text-center">
           <p className="text-xl mb-4">
             Get a <span className="font-bold">Life-Time</span> account for just{" "}
@@ -78,7 +78,7 @@ export default function SettingsPanel({
           </Button>
           <p className="text-sm opacity-80">open to a limited number of users</p>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">

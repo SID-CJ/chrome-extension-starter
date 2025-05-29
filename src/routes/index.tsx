@@ -24,7 +24,7 @@ function Index() {
   const [showImageBackgrounds, setShowImageBackgrounds] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [darkMode, setDarkMode] = useState(false)
-  const [currentBackground, setCurrentBackground] = useState(" #4a3b78")
+  const [currentBackground, setCurrentBackground] = useState("#000000")
   const [currentPhotographer, setCurrentPhotographer] = useState("")
   const [pageUrl, setPageUrl] = useState("") // Add this new state
   const [timeAndDateVisible, setTimeAndDateVisible] = useState(true)
