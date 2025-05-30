@@ -73,6 +73,47 @@ export const loadSettings = async (): Promise<AppSettings> => {
 };
 
 /**
+ * Save data to Chrome local storage
+ */
+export const saveToLocalStorage = async <T>(key: string, data: T): Promise<void> => {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [key]: data }, () => {
+        resolve();
+      });
+    });
+  } else {
+    // Fallback for development environments without Chrome API
+    localStorage.setItem(key, JSON.stringify(data));
+    return Promise.resolve();
+  }
+};
+
+/**
+ * Load data from Chrome local storage
+ */
+export const loadFromLocalStorage = async <T>(key: string): Promise<T | null> => {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([key], (result) => {
+        resolve(result[key] || null);
+      });
+    });
+  } else {
+    // Fallback for development environments without Chrome API
+    const data = localStorage.getItem(key);
+    return Promise.resolve(data ? JSON.parse(data) : null);
+  }
+};
+
+/**
+ * Check if data in cache is stale based on timestamp and TTL
+ */
+export const isCacheStale = (timestamp: number, ttlMs: number): boolean => {
+  return Date.now() - timestamp > ttlMs;
+};
+
+/**
  * Listen for settings changes from other tabs/windows
  */
 export const listenForSettingsChanges = (callback: (changes: Partial<AppSettings>) => void): (() => void) => {
