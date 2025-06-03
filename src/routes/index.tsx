@@ -1,13 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from "react"
-import { Settings, CirclePlay, Menu, Image, Play, Pause, Clock4, Camera } from "lucide-react"
-import SettingsPanel from "./-components/settings-panel"
-import ListenPanel from "./-components/listen-panel"
-import ImageBackgroundPanel from "./-components/image-bg-panel"
+import { Camera, CirclePlay, Clock4, Image, Menu, Pause, Play, Settings } from "lucide-react"
+import { listenForSettingsChanges, loadSettings, saveSettings } from "@/utils/chrome-storage"
+import { useEffect, useState } from "react"
+
 import Clock from "./-components/clock"
-import Quote from "./-components/quote"
+import ImageBackgroundPanel from "./-components/image-bg-panel"
+import ListenPanel from "./-components/listen-panel"
 import PlayerService from "@/services/PlayerService"
-import { loadSettings, saveSettings, listenForSettingsChanges } from "@/utils/chrome-storage"
+import Quote from "./-components/quote"
+import SettingsPanel from "./-components/settings-panel"
+import { createFileRoute } from '@tanstack/react-router'
 import { useTheme } from "./-components/theme-provider" // Import the theme hook
 
 export const Route = createFileRoute('/')({
@@ -36,6 +37,14 @@ function Index() {
   const [backgroundKey, setBackgroundKey] = useState(0)
   const [blurAmount, setBlurAmount] = useState(0)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
+
+  const player = PlayerService;
+  const [isPlaying, setIsPlaying] = useState(player.isPlaying()); // Local state for playback
+
+  useEffect(() => {
+    const unsubscribe = player.subscribe(setIsPlaying); // Subscribe to playback state changes
+    return unsubscribe; // Cleanup on unmount
+  }, [player]);
 
   // Sync darkMode state with the theme from ThemeProvider
   useEffect(() => {
@@ -172,8 +181,6 @@ function Index() {
     setShowListenPanel(false)
   }
 
-  const player = PlayerService;
-
   // Determine if currentBackground is an image URL or a gradient
   const isImageUrl = currentBackground.startsWith('http') || currentBackground.startsWith('https')
   const backgroundStyles = isImageUrl
@@ -282,7 +289,7 @@ function Index() {
             <button 
               className="p-2 rounded-full bg-transparent hover:bg-white/20" 
               onClick={() => {
-                if (player.isPlaying()) {
+                if (isPlaying) {
                   player.pause();
                 } else {
                   if (!player.getCurrentTrackId()) {
@@ -294,7 +301,7 @@ function Index() {
                 }
               }}
             >
-              {player.isPlaying() ? (
+              {isPlaying ? (
                 <Pause className="w-6 h-6 text-white" />
               ) : (
                 <Play className="w-6 h-6 text-white" />

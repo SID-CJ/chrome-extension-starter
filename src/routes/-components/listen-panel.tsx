@@ -1,24 +1,45 @@
-import { useState, useEffect } from "react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Play, Pause, Repeat, Clock } from "lucide-react";
-import { useTracksFetch } from "@/api/tracks/useTracksFetch";
-import PlayerService from "@/services/PlayerService";
-import { Track } from "@/api/tracks/useTracksFetch";
+import { Clock, Pause, Play, Repeat } from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import PlayerService from "@/services/PlayerService";
+import { Separator } from "@/components/ui/separator";
+import { Track } from "@/api/tracks/useTracksFetch";
+import { useTracksFetch } from "@/api/tracks/useTracksFetch";
 
 export default function AmbientSoundPlayer() {
   const { data, isLoading, isError } = useTracksFetch();
-  const [activeTrackId, setActiveTrackId] = useState<string | null>(null);
-  const [isLooping, setIsLooping] = useState(false);
-  const [timerDuration, setTimerDuration] = useState<number | null>(null); // Duration in seconds
-  const [remainingTime, setRemainingTime] = useState<number | null>(null); // Remaining time in seconds
+
   const player = PlayerService;
+
+  // Subscribe to PlayerService states
+  const [isPlaying, setIsPlaying] = useState(player.isPlaying());
+  const [isLooping, setIsLooping] = useState(player.isLoopingEnabled());
+  const [remainingTime, setRemainingTime] = useState(player.getRemainingTime());
+  const [activeTrackId, setActiveTrackId] = useState(player.getCurrentTrackId());
+
+  useEffect(() => {
+    // Subscribe to PlayerService updates
+    const unsubscribePlaying = player.subscribe(setIsPlaying);
+    const unsubscribeLooping = player.subscribeToLoop(setIsLooping);
+    const unsubscribeTimer = player.subscribeToTimer(setRemainingTime);
+
+    // Update activeTrackId when the track changes
+    const updateActiveTrackId = () => setActiveTrackId(player.getCurrentTrackId());
+    player.subscribe(updateActiveTrackId);
+
+    return () => {
+      unsubscribePlaying();
+      unsubscribeLooping();
+      unsubscribeTimer();
+    };
+  }, [player]);
 
   // Cleanup player only when tab is closed
   useEffect(() => {
@@ -33,58 +54,29 @@ export default function AmbientSoundPlayer() {
     };
   }, [player]);
 
-  // Sync looping state with PlayerService
-  useEffect(() => {
-    player.setLoop(isLooping);
-  }, [isLooping, player]);
-
-  // Handle timer countdown
-  useEffect(() => {
-    if (remainingTime === null || remainingTime <= 0) {
-      if (remainingTime === 0) {
-        setIsLooping(false); // Stop looping when timer hits zero
-        setTimerDuration(null);
-      }
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setRemainingTime((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [remainingTime]);
 
   const handleTrackSelect = (track: Track) => {
-    if (activeTrackId === track.id) {
+    if (player.getCurrentTrackId() === track.id) {
       if (player.isPlaying()) {
         player.pause();
       } else {
         player.play();
       }
     } else {
+      player.setLoop(false);
+      player.setRemainingTime(null);
       player.loadTrack(track, true);
-      setActiveTrackId(track.id);
     }
   };
 
   const toggleLoop = () => {
-    if (!isLooping && timerDuration === null) {
-      // If not looping and no timer set, just enable looping without timer
-      setIsLooping(true);
-    } else {
-      // If looping or timer is active, stop looping and reset timer
-      setIsLooping(false);
-      setTimerDuration(null);
-      setRemainingTime(null);
-    }
+    player.setLoop(!player.isLoopingEnabled());
   };
 
   const setTimer = (minutes: number) => {
     const seconds = minutes * 60;
-    setTimerDuration(seconds);
-    setRemainingTime(seconds);
-    setIsLooping(true); // Enable looping when timer is set
+    player.setRemainingTime(seconds);
+    player.setLoop(true);
   };
 
   // Format remaining time as MM:SS
@@ -162,7 +154,7 @@ export default function AmbientSoundPlayer() {
                   thumbnailUrl={track.thumbnail_url}
                   active={track.id === activeTrackId}
                   onSelect={() => handleTrackSelect(track)}
-                  isPlaying={track.id === activeTrackId && player.isPlaying()}
+                  isPlaying={track.id === activeTrackId && isPlaying}
                 />
               ))
             ) : (
@@ -199,13 +191,13 @@ export default function AmbientSoundPlayer() {
                 className="rounded-full h-8 w-8"
                 onClick={() =>
                   activeTrackId
-                    ? player.isPlaying()
+                    ? isPlaying
                       ? player.pause()
                       : player.play()
                     : handleTrackSelect(data.tracks[0])
                 }
               >
-                {activeTrackId && player.isPlaying() ? (
+                {activeTrackId && isPlaying ? (
                   <Pause className="h-4 w-4" />
                 ) : (
                   <Play className="h-4 w-4" />

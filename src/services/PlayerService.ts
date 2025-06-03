@@ -1,5 +1,5 @@
-import { Track } from "@/api/tracks/useTracksFetch";
 import { Howl } from "howler";
+import { Track } from "@/api/tracks/useTracksFetch";
 
 /**
  * PlayerService - A singleton audio player service built on top of Howler.js
@@ -9,8 +9,14 @@ import { Howl } from "howler";
 class PlayerService {
   private static instance: PlayerService;
   private sound: Howl | null = null;
-  private currentTrackId: string | null = null; // Store the current track ID
-  private isLooping: boolean = false; // New property to track looping state
+  private currentTrackId: string | null = null;
+  private isLooping: boolean = false;
+  private remainingTime: number | null = null;
+  private timerInterval: NodeJS.Timeout | null = null; 
+  private _isPlaying: boolean = false;
+  private playbackStateListeners: ((isPlaying: boolean) => void)[] = []; 
+  private loopListeners: ((isLooping: boolean) => void)[] = []; 
+  private timerListeners: ((remainingTime: number | null) => void)[] = []; 
 
   private constructor() {}
 
@@ -42,7 +48,11 @@ class PlayerService {
       html5: true,
       preload: true,
       autoplay,
-      loop: this.isLooping, // Apply current looping state when loading
+      loop: this.isLooping,
+      onplay: () => this.updatePlayingState(true),
+      onpause: () => this.updatePlayingState(false),
+      onstop: () => this.updatePlayingState(false),
+      onend: () => this.updatePlayingState(false),
       onloaderror: (_, error) => {
         console.error("Error loading audio:", error);
       },
@@ -58,6 +68,12 @@ class PlayerService {
   play() {
     if (this.sound && !this.sound.playing()) {
       this.sound.play();
+      this.startTimer();
+      this.updatePlayingState(true);
+    }
+
+    if (this.remainingTime !== null && this.remainingTime > 0) {
+      this.startTimer();
     }
   }
 
@@ -67,6 +83,8 @@ class PlayerService {
   pause() {
     if (this.sound && this.sound.playing()) {
       this.sound.pause();
+      this.updatePlayingState(false);
+      this.stopTimer();
     }
   }
 
@@ -75,7 +93,7 @@ class PlayerService {
    * @returns {boolean} True if playing, false otherwise
    */
   isPlaying(): boolean {
-    return this.sound ? this.sound.playing() : false;
+    return this._isPlaying;
   }
 
   /**
@@ -93,7 +111,63 @@ class PlayerService {
   setLoop(loop: boolean) {
     this.isLooping = loop;
     if (this.sound) {
-      this.sound.loop(loop); // Update the Howl instance's loop setting
+      this.sound.loop(loop);
+    }
+    this.notifyLoopListeners();
+  }
+
+  /**
+   * Sets the remaining time for the current track
+   * @param {number | null} seconds - The remaining time in seconds, or null to stop the timer
+   */
+  setRemainingTime(seconds: number | null) {
+    this.remainingTime = seconds;
+    this.notifyTimerListeners();
+
+    if (this._isPlaying && seconds !== null && seconds > 0) {
+      this.startTimer();
+    } else {
+      this.stopTimer(); 
+    }
+  }
+
+  /**
+   * Gets the remaining time of the current track
+   * @returns {number | null} The remaining time in seconds, or null if not set
+   */
+  getRemainingTime(): number | null {
+    return this.remainingTime;
+  }
+
+  /**
+   * Starts a timer that counts down the remaining time of the current track
+   * This method is called when the track is playing and has a valid remaining time
+   */
+  private startTimer() {
+    if (!this._isPlaying || this.remainingTime === null || this.remainingTime <= 0 || this.timerInterval) {
+      return;
+    }
+
+    this.timerInterval = setInterval(() => {
+      if (this.remainingTime !== null && this.remainingTime > 0) {
+        this.remainingTime -= 1;
+        this.notifyTimerListeners();
+
+        if (this.remainingTime === 0) {
+          this.setLoop(false);
+          this.stopTimer();
+        }
+      }
+    }, 1000);
+  }
+
+  /**
+   * Stops the timer if it is running
+   */
+  private stopTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
   }
 
@@ -114,8 +188,59 @@ class PlayerService {
       this.sound.unload();
       this.sound = null;
     }
-    this.currentTrackId = null; // Clear the track ID on destroy
-    this.isLooping = false; // Reset looping state
+    this.currentTrackId = null;
+    this.isLooping = false;
+    this._isPlaying = false;
+    this.remainingTime = null;
+    this.notifyLoopListeners();
+    this.notifyTimerListeners();
+    this.playbackStateListeners.forEach((listener) => listener(false));
+  }
+
+  // Notify listeners of playback state changes
+  private updatePlayingState(isPlaying: boolean) {
+    this._isPlaying = isPlaying;
+    this.playbackStateListeners.forEach((listener) => listener(isPlaying));
+  }
+
+  /**
+   * Notifies all subscribed listeners about the current playback state
+   * This is called whenever the playback state changes
+   */
+  private notifyLoopListeners() {
+    this.loopListeners.forEach((listener) => listener(this.isLooping));
+  }
+
+  /**
+   * Notifies all subscribed listeners about the current remaining time
+   * This is called whenever the remaining time changes
+   */
+  private notifyTimerListeners() {
+    this.timerListeners.forEach((listener) => listener(this.remainingTime));
+  }
+
+  // Allow components to subscribe to playback state changes
+  subscribe(listener: (isPlaying: boolean) => void) {
+    this.playbackStateListeners.push(listener);
+    return () => {
+      this.playbackStateListeners = this.playbackStateListeners.filter((l) => l !== listener);
+    };
+  }
+
+  // Allow components to subscribe to looping state changes
+  subscribeToLoop(listener: (isLooping: boolean) => void) {
+    this.loopListeners.push(listener);
+    return () => {
+      this.loopListeners = this.loopListeners.filter((l) => l !== listener);
+    };
+  }
+
+  // Allow components to subscribe to timer updates
+  subscribeToTimer(listener: (remainingTime: number | null) => void) {
+    this.timerListeners.push(listener);
+    return () => {
+      this.timerListeners = this.timerListeners.filter((l) => l !== listener);
+    };
   }
 }
 
