@@ -26,13 +26,13 @@ export default function AmbientSoundPlayer() {
 
   useEffect(() => {
     // Subscribe to PlayerService updates
-    const unsubscribePlaying = player.subscribe(setIsPlaying);
+    const unsubscribePlaying = player.subscribeToPlayback(setIsPlaying);
     const unsubscribeLooping = player.subscribeToLoop(setIsLooping);
     const unsubscribeTimer = player.subscribeToTimer(setRemainingTime);
 
     // Update activeTrackId when the track changes
     const updateActiveTrackId = () => setActiveTrackId(player.getCurrentTrackId());
-    player.subscribe(updateActiveTrackId);
+    player.subscribeToPlayback(updateActiveTrackId);
 
     return () => {
       unsubscribePlaying();

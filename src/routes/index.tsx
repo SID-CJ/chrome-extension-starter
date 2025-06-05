@@ -42,7 +42,7 @@ function Index() {
   const [isPlaying, setIsPlaying] = useState(player.isPlaying()); // Local state for playback
 
   useEffect(() => {
-    const unsubscribe = player.subscribe(setIsPlaying); // Subscribe to playback state changes
+    const unsubscribe = player.subscribeToPlayback(setIsPlaying); // Subscribe to playback state changes
     return unsubscribe; // Cleanup on unmount
   }, [player]);
 
