@@ -46,9 +46,29 @@ class PlayerService {
       onloaderror: (_, error) => {
         console.error("Error loading audio:", error);
       },
+      onplay: () => {
+        // Dispatch play event
+        window.dispatchEvent(new Event('player-play'));
+      },
+      onpause: () => {
+        // Dispatch pause event
+        window.dispatchEvent(new Event('player-pause'));
+      },
+      onend: () => {
+        if (!this.isLooping) {
+          window.dispatchEvent(new Event('player-pause'));
+        }
+      }
     });
 
     this.currentTrackId = track.id; // Store the track ID when loading
+    
+    // Dispatch track changed event
+    const trackChangedEvent = new CustomEvent('player-track-changed', {
+      detail: { trackId: track.id }
+    });
+    window.dispatchEvent(trackChangedEvent);
+    
     return this.sound;
   }
 

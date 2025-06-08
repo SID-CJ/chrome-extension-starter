@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Repeat, Clock } from "lucide-react";
+import { Play, Pause,Clock, Clock4 } from "lucide-react";
 import { useTracksFetch } from "@/api/tracks/useTracksFetch";
 import PlayerService from "@/services/PlayerService";
 import { Track } from "@/api/tracks/useTracksFetch";
@@ -18,7 +18,45 @@ export default function AmbientSoundPlayer() {
   const [isLooping, setIsLooping] = useState(false);
   const [timerDuration, setTimerDuration] = useState<number | null>(null); // Duration in seconds
   const [remainingTime, setRemainingTime] = useState<number | null>(null); // Remaining time in seconds
+  const [isPlaying, setIsPlaying] = useState(false); // Track play state separately
   const player = PlayerService;
+
+  // Initialize state from PlayerService when component mounts
+  useEffect(() => {
+    // Sync active track ID
+    const currentTrackId = player.getCurrentTrackId();
+    if (currentTrackId) {
+      setActiveTrackId(currentTrackId);
+      setIsPlaying(player.isPlaying());
+    }
+    
+    // Sync looping state
+    setIsLooping(player.isLoopingEnabled());
+    
+    // Set up listener for playback state changes
+    const handlePlayStateChange = () => {
+      setIsPlaying(player.isPlaying());
+    };
+    
+    // Add custom event listeners
+    window.addEventListener('player-play', handlePlayStateChange);
+    window.addEventListener('player-pause', handlePlayStateChange);
+    window.addEventListener('player-track-changed', (e) => {
+      const customEvent = e as CustomEvent;
+      const trackId = customEvent.detail?.trackId;
+      if (trackId) {
+        setActiveTrackId(trackId);
+        setIsPlaying(true);
+      }
+    });
+    
+    return () => {
+      // Remove event listeners
+      window.removeEventListener('player-play', handlePlayStateChange);
+      window.removeEventListener('player-pause', handlePlayStateChange);
+      window.removeEventListener('player-track-changed', handlePlayStateChange);
+    };
+  }, [player]);
 
   // Cleanup player only when tab is closed
   useEffect(() => {
@@ -59,12 +97,24 @@ export default function AmbientSoundPlayer() {
     if (activeTrackId === track.id) {
       if (player.isPlaying()) {
         player.pause();
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(new Event('player-pause'));
+        setIsPlaying(false);
       } else {
         player.play();
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(new Event('player-play'));
+        setIsPlaying(true);
       }
     } else {
       player.loadTrack(track, true);
+      // Dispatch custom event with track ID
+      const trackChangedEvent = new CustomEvent('player-track-changed', {
+        detail: { trackId: track.id }
+      });
+      window.dispatchEvent(trackChangedEvent);
       setActiveTrackId(track.id);
+      setIsPlaying(true);
     }
   };
 
@@ -95,6 +145,9 @@ export default function AmbientSoundPlayer() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Find current track object
+  const currentTrack = data?.tracks?.find(t => t.id === activeTrackId);
+
   return (
     <div className="w-150 flex flex-col min-h-screen bg-background text-foreground">
       {/* Main Content Area - Scrollable */}
@@ -108,25 +161,25 @@ export default function AmbientSoundPlayer() {
           <TabsList className="bg-background border border-input rounded-full p-1 h-10 w-full">
             <TabsTrigger
               value="all"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:text-white"
             >
               All
             </TabsTrigger>
             <TabsTrigger
               value="work"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:text-white"
             >
               Work
             </TabsTrigger>
             <TabsTrigger
               value="focus"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:text-white"
             >
               Focus
             </TabsTrigger>
             <TabsTrigger
               value="study"
-              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="rounded-full px-3 text-sm data-[state=active]:bg-primary data-[state=active]:text-white dark:data-[state=active]:text-white"
             >
               Study
             </TabsTrigger>
@@ -162,7 +215,7 @@ export default function AmbientSoundPlayer() {
                   thumbnailUrl={track.thumbnail_url}
                   active={track.id === activeTrackId}
                   onSelect={() => handleTrackSelect(track)}
-                  isPlaying={track.id === activeTrackId && player.isPlaying()}
+                  isPlaying={track.id === activeTrackId && isPlaying}
                 />
               ))
             ) : (
@@ -177,9 +230,9 @@ export default function AmbientSoundPlayer() {
         <div className="border-t border-input py-2 px-4">
           <div className="max-w-3xl mx-auto w-full flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {activeTrackId && data.tracks.find((t) => t.id === activeTrackId)?.thumbnail_url ? (
+              {currentTrack?.thumbnail_url ? (
                 <img
-                  src={data.tracks.find((t) => t.id === activeTrackId)!.thumbnail_url!}
+                  src={currentTrack.thumbnail_url}
                   alt="Playing track thumbnail"
                   className="w-8 h-8 rounded"
                 />
@@ -187,9 +240,7 @@ export default function AmbientSoundPlayer() {
                 <div className="w-8 h-8 bg-muted rounded"></div>
               )}
               <span className="text-sm font-medium">
-                {activeTrackId
-                  ? data.tracks.find((t) => t.id === activeTrackId)?.title
-                  : data.tracks[0].title}
+                {currentTrack?.title || (data.tracks.length > 0 ? data.tracks[0].title : 'Select a track')}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -197,15 +248,23 @@ export default function AmbientSoundPlayer() {
                 variant="ghost"
                 size="icon"
                 className="rounded-full h-8 w-8"
-                onClick={() =>
-                  activeTrackId
-                    ? player.isPlaying()
-                      ? player.pause()
-                      : player.play()
-                    : handleTrackSelect(data.tracks[0])
-                }
+                onClick={() => {
+                  if (activeTrackId) {
+                    if (isPlaying) {
+                      player.pause();
+                      setIsPlaying(false);
+                      window.dispatchEvent(new Event('player-pause'));
+                    } else {
+                      player.play();
+                      setIsPlaying(true);
+                      window.dispatchEvent(new Event('player-play'));
+                    }
+                  } else if (data.tracks.length > 0) {
+                    handleTrackSelect(data.tracks[0]);
+                  }
+                }}
               >
-                {activeTrackId && player.isPlaying() ? (
+                {isPlaying ? (
                   <Pause className="h-4 w-4" />
                 ) : (
                   <Play className="h-4 w-4" />
@@ -224,7 +283,7 @@ export default function AmbientSoundPlayer() {
                       {remainingTime !== null ? (
                         <Clock className="h-4 w-4" />
                       ) : (
-                        <Repeat className="h-4 w-4" />
+                        <Clock4 className="h-4 w-4" />
                       )}
                     </Button>
                   </HoverCardTrigger>

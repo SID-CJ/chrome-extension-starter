@@ -18,11 +18,11 @@ export const defaultSettings: AppSettings = {
   darkMode: false,
   language: "en",
   timeFormat: "12h",
-  dateFormat: "mdy",
-  quoteFrequency: "daily",
+  dateFormat: "default",
+  quoteFrequency: "hourly",
   timeAndDateVisible: true,
   quotesVisible: true,
-  currentBackground: " #4a3b78",
+  currentBackground: "#000000", // Changed from " #4a3b78" to black
   currentPhotographer: "",
   pageUrl:"",
   blurAmount: 0,
@@ -52,10 +52,22 @@ export const saveSettings = async (settings: Partial<AppSettings>): Promise<void
  * Load all settings from Chrome sync storage
  */
 export const loadSettings = async (): Promise<AppSettings> => {
+  // First check if this is a first-time user
+  const isFirstTimeUser = await isNewUser();
+  
   if (typeof chrome !== 'undefined' && chrome.storage) {
     return new Promise((resolve) => {
       chrome.storage.sync.get(Object.keys(defaultSettings), (items) => {
-        resolve({ ...defaultSettings, ...items } as AppSettings);
+        const settings = { ...defaultSettings, ...items } as AppSettings;
+        
+        // For new users, ensure background is set to black regardless of any cached settings
+        if (isFirstTimeUser) {
+          settings.currentBackground = "#000000";
+          settings.currentPhotographer = "";
+          settings.pageUrl = "";
+        }
+        
+        resolve(settings);
       });
     });
   } else {
@@ -68,7 +80,48 @@ export const loadSettings = async (): Promise<AppSettings> => {
         (settings as Record<keyof AppSettings, unknown>)[key as keyof AppSettings] = parsedValue;
       }
     });
+    
+    // For new users, ensure background is set to black in local storage fallback as well
+    if (isFirstTimeUser) {
+      settings.currentBackground = "#000000";
+      settings.currentPhotographer = "";
+      settings.pageUrl = "";
+    }
+    
     return Promise.resolve(settings);
+  }
+};
+
+/**
+ * Check if this is a new user (first time opening the extension)
+ */
+export const isNewUser = async (): Promise<boolean> => {
+  const userInitializedKey = 'extension_initialized';
+  
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([userInitializedKey], (result) => {
+        const isNew = !result[userInitializedKey];
+        
+        // If this is a new user, set the flag to remember for next time
+        if (isNew) {
+          chrome.storage.local.set({ [userInitializedKey]: true });
+        }
+        
+        resolve(isNew);
+      });
+    });
+  } else {
+    // Fallback for development environments
+    const initialized = localStorage.getItem(userInitializedKey);
+    const isNew = !initialized;
+    
+    // If this is a new user, set the flag to remember for next time
+    if (isNew) {
+      localStorage.setItem(userInitializedKey, 'true');
+    }
+    
+    return Promise.resolve(isNew);
   }
 };
 

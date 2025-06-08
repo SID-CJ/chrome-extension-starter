@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from "react"
-import { Settings, CirclePlay, Menu, Image, Play, Pause, Clock4, Camera } from "lucide-react"
+import { Settings, CirclePlay, Menu, Image, Play, Pause, Camera } from "lucide-react"
 import SettingsPanel from "./-components/settings-panel"
 import ListenPanel from "./-components/listen-panel"
 import ImageBackgroundPanel from "./-components/image-bg-panel"
@@ -32,7 +32,7 @@ function Index() {
   const [timeFormat, setTimeFormat] = useState("12h")
   const [dateFormat, setDateFormat] = useState("default")
   const [language, setLanguage] = useState("en")
-  const [quoteFrequency, setQuoteFrequency] = useState("daily")
+  const [quoteFrequency, setQuoteFrequency] = useState("hourly")
   const [backgroundKey, setBackgroundKey] = useState(0)
   const [blurAmount, setBlurAmount] = useState(0)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
@@ -304,12 +304,6 @@ function Index() {
               className="p-2 rounded-full bg-transparent hover:bg-white/20" 
               onClick={handleListenClick}
             >
-              <Clock4 className="w-6 h-6 text-white" />
-            </button>
-            <button 
-              className="p-2 rounded-full bg-transparent hover:bg-white/20" 
-              onClick={handleListenClick}
-            >
               <Menu className="w-6 h-6 text-white" />
             </button>
           </div>
@@ -357,9 +351,10 @@ function Index() {
           <div className="absolute top-0 left-0 w-px h-full bg-border shadow-sm z-10"></div>
           
           <img 
-            src="/icons/web/Icon_48.png" 
+            src="/icons/web/48.png" 
             alt="Icon" 
-            className="w-8 h-8 mb-4" 
+            className="w-8 h-8 mb-4 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={() => window.open('https://ambiloops.com/', '_blank')}
           />
           <button 
             className={`p-2 rounded-full ${showListenPanel ? 'bg-accent' : 'hover:bg-accent/50'} mb-4`}

@@ -35,14 +35,19 @@ export default function SettingsPanel({
   setTimeFormat,
   dateFormat,
   setDateFormat,
-  language,
-  setLanguage,
+  //language,
+  //setLanguage,
   quoteFrequency,
   setQuoteFrequency
 }: SettingsPanelProps) {
   const { theme, setTheme } = useTheme(); // Use theme and setTheme from ThemeProvider
-  const [darkModeOption, setDarkModeOption] = useState<'dark' | 'light' | 'system'>(theme as 'dark' | 'light' | 'system'); // Sync with theme provider
+  
+  // Initialize darkModeOption to match the current theme setting
+  const [darkModeOption, setDarkModeOption] = useState<'dark' | 'light' | 'system'>(
+    theme as 'dark' | 'light' | 'system'
+  );
 
+  // Handle dark mode changes
   const handleDarkModeChange = (value: 'dark' | 'light' | 'system') => {
     setDarkModeOption(value);
     setTheme(value); // Update theme via ThemeProvider
@@ -82,7 +87,7 @@ export default function SettingsPanel({
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-medium">Time and date</h3>
+          <h3 className="cctext-xl font-medium">Time and date</h3>
           <Switch
             checked={timeAndDateVisible}
             onCheckedChange={setTimeAndDateVisible}
@@ -161,10 +166,10 @@ export default function SettingsPanel({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <label className="text-base text-muted-foreground">Language</label>
-          </div>
-          <div className="col-span-2">
+          </div> */}
+          {/* <div className="col-span-2">
             <Select value={language} onValueChange={setLanguage}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select an option" />
@@ -175,7 +180,7 @@ export default function SettingsPanel({
                 <SelectItem value="fr">French</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-3 gap-4">

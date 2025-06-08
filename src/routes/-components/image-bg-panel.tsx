@@ -24,7 +24,6 @@ export default function ImageBackgroundPanel({
   setCurrentBackground,
   setShowImageBackgrounds,
   setCurrentPhotographer,
-  pageUrl = "",
   setPageUrl = () => {},
   blurAmount = 0,
   setBlurAmount = () => {},
@@ -83,9 +82,34 @@ export default function ImageBackgroundPanel({
 
   if (isLoading) {
     return (
-      <div className="w-150 flex h-screen bg-background">
-        <div className="flex-1 p-4 md:p-6">
-          <p>Loading images...</p>
+      <div className="w-150 flex h-screen bg-background text-foreground">
+        <div className="flex-1 overflow-auto flex flex-col">
+          <div className="p-4 md:p-6 flex flex-col h-full">
+            <div className="flex flex-col mb-4">
+              <h1 className="text-3xl font-bold mb-2">Background Images</h1>
+              <p className="text-sm text-muted-foreground">We'll update images based on time and chosen frequency</p>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <Card
+                className="aspect-square border-2 cursor-pointer rounded-none max-w-[180px]"
+                style={{ backgroundColor: currentSolidColor }}
+                onClick={handleSolidColorsClick}
+              >
+                <div className="h-full w-full flex items-center justify-center p-2">
+                  <span className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                    Solid Colors
+                  </span>
+                </div>
+              </Card>
+              
+              <div className="col-span-2 flex items-center">
+                <p>Loading images...</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -93,9 +117,34 @@ export default function ImageBackgroundPanel({
 
   if (error) {
     return (
-      <div className="w-150 flex h-screen bg-background">
-        <div className="flex-1 p-4 md:p-6">
-          <p>Error loading images: {error.message}</p>
+      <div className="w-150 flex h-screen bg-background text-foreground">
+        <div className="flex-1 overflow-auto flex flex-col">
+          <div className="p-4 md:p-6 flex flex-col h-full">
+            <div className="flex flex-col mb-4">
+              <h1 className="text-3xl font-bold mb-2">Background Images</h1>
+              <p className="text-sm text-muted-foreground">We'll update images based on time and chosen frequency</p>
+            </div>
+
+            <Separator className="my-4" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <Card
+                className="aspect-square border-2 cursor-pointer rounded-none max-w-[180px]"
+                style={{ backgroundColor: currentSolidColor }}
+                onClick={handleSolidColorsClick}
+              >
+                <div className="h-full w-full flex items-center justify-center p-2">
+                  <span className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
+                    Solid Colors
+                  </span>
+                </div>
+              </Card>
+              
+              <div className="col-span-2 flex items-center">
+                <p>Error loading images: {error.message}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -105,9 +154,9 @@ export default function ImageBackgroundPanel({
     <div className="w-150 flex h-screen bg-background text-foreground">
       <div className="flex-1 overflow-auto flex flex-col">
         <div className="p-4 md:p-6 flex flex-col h-full">
-          <div className="flex items-center mb-4">
-            
-            <h1 className="text-2xl font-bold">Image Backgrounds</h1>
+          <div className="flex flex-col mb-4">
+            <h1 className="text-3xl font-bold mb-2">Background Images</h1>
+            <p className="text-sm text-muted-foreground">We'll update images based on time and chosen frequency</p>
           </div>
 
           <Separator className="my-4" />
@@ -118,7 +167,7 @@ export default function ImageBackgroundPanel({
               style={{ backgroundColor: currentSolidColor }}
               onClick={handleSolidColorsClick}
             >
-              <div className="h-full w-full flex items-end p-2">
+              <div className="h-full w-full flex items-center justify-center p-2">
                 <span className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
                   Solid Colors
                 </span>
@@ -135,15 +184,7 @@ export default function ImageBackgroundPanel({
                   backgroundImage: `url(${image.thumbnail_url})` // Use original URL directly
                 }}
                 onClick={() => handleBackgroundChange(image.original_image_url, image.photographer, image.page_url)}
-              >
-                {selectedBackground === image.original_image_url && pageUrl && (
-                  <div className="h-full w-full flex items-end p-2">
-                    <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded">
-                      Photo credit
-                    </a>
-                  </div>
-                )}
-              </Card>
+              />
             ))}
           </div>
 

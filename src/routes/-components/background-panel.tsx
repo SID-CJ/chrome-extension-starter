@@ -53,11 +53,11 @@ export default function ColorPalette({
     <div className="w-150 flex h-screen bg-background text-foreground">
       <div className="flex-1 overflow-auto">
         <div className="p-4 md:p-6">
-          <div className="flex items-center mb-4">
-            <Button variant="ghost" size="icon" className="mr-2" onClick={handleBackClick}>
-              <ArrowLeft className="h-6 w-6" />
+          <div className="flex items-center mb-6">
+            <Button variant="ghost" size="lg" className="mr-4 p-3" onClick={handleBackClick}>
+              <ArrowLeft className="h-20 w-20" />
             </Button>
-            <h1 className="text-2xl font-bold">Solid colors</h1>
+            <h1 className="text-3xl font-bold">Solid colors</h1>
           </div>
 
           <Separator className="my-4" />
